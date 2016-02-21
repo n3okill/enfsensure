@@ -1,0 +1,59 @@
+{
+  "name": "enfsensure",
+  "version": "0.0.1",
+  "description": "Ensure file, folder, link or symlink existence in file system for node fs module",
+  "license": "CC-BY-4.0",
+  "author": {
+    "name": "Joao Parreira",
+    "email": "joaofrparreira@gmail.com"
+  },
+  "homepage": "https://github.com/n3okill/enfsensure",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/n3okill/enfsensure.git"
+  },
+  "bugs": {
+    "url": "https://github.com/n3okill/enfsensure/issues"
+  },
+  "engines": {
+    "node": ">=4.2.4"
+  },
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "make test",
+    "appveyor": "node ./node_modules/mocha/bin/mocha --reporter spec --require should test/*.js"
+  },
+  "dependencies": {
+    "enfsmkdirp": "0.0.1",
+    "enfspatch": "^0.0.3"
+  },
+  "devDependencies": {
+    "eslint": "2.1.0",
+    "eslint-plugin-mocha": "2.0.0",
+    "mocha": "2.4.5",
+    "should": "8.2.2",
+    "rimraf": "2.5.2"
+  },
+  "keywords": [
+    "append",
+    "chmod",
+    "create",
+    "data",
+    "ensure",
+    "dir",
+    "directory",
+    "fs",
+    "file",
+    "file system",
+    "link",
+    "mkdir",
+    "mkdirp",
+    "stream",
+    "symlink",
+    "recursive",
+    "write stream"
+  ]
+}
