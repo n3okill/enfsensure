@@ -1,6 +1,6 @@
 {
   "name": "enfsensure",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Ensure file, folder, link or symlink existence in file system for node fs module",
   "license": "CC-BY-4.0",
   "author": {
