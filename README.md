@@ -8,7 +8,11 @@
 enfsensure
 ==========
 Module that add ensure functionality to node fs module
+
 **enfs** stands for [E]asy [N]ode [fs]
+
+This module is intended to work as a sub-module of [enfs](https://www.npmjs.com/package/enfs)
+
 
 Description
 -----------
@@ -26,12 +30,13 @@ if the parent directory of the item to be ensured don't exist it will be automat
   * ensureSymlink
   * ensureSymlinkSync
   
+  
 Usage
 -----
 `enfsensure`
 
 ```js
-    var enfsensure = require("esnofsensure");
+    var enfsensure = require("enfsensure");
 ```
 
 Errors
