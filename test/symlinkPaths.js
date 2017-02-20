@@ -6,23 +6,21 @@
 
 "use strict";
 
-var nodePath = require("path"),
-    nodeOs = require("os"),
-    nodeUtil = require("util"),
-    enFs = require("enfspatch"),
-    enfsmkdirp = require("enfsmkdirp"),
-    cwd = process.cwd(),
-    rimraf = require("rimraf"),
-    ensure = require("../"),
-    ensureSymlinkPaths = require("../lib/async/symlinkPaths"),
-    ensureSymlinkPathsSync = require("../lib/sync/symlinkPaths");
+const nodePath = require("path");
+const nodeOs = require("os");
+const enFs = require("enfspatch");
+const enfsmkdirp = require("enfsmkdirp");
+const cwd = process.cwd();
+const rimraf = require("rimraf");
+const ensure = require("../");
+const ensureSymlinkPaths = require("../lib/async/symlinkPaths");
+const ensureSymlinkPathsSync = require("../lib/sync/symlinkPaths");
 
 
 describe("enfsensure symlink paths", function() {
-    var tmpPath, tests;
-    tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensuresymlinkPaths");
+    const tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensuresymlinkPaths");
 
-    tests = [
+    const tests = [
         {src: "foo.txt", dst: "symlink.txt", result: {toCwd: "foo.txt", toDst: "foo.txt"}},// smart && nodestyle
         {src: "foo.txt", dst: "empty-dir/symlink.txt", result: {toCwd: "foo.txt", toDst: "../foo.txt"}}, // smart
         {src: "../foo.txt", dst: "empty-dir/symlink.txt", result: {toCwd: "foo.txt", toDst: "../foo.txt"}},// nodestyle
@@ -71,7 +69,7 @@ describe("enfsensure symlink paths", function() {
         describe('symlinkPaths()', function() {
             tests.forEach(function(test) {
                 it("should return '" + JSON.stringify(test.result) + "' when src '" + test.src + "' and dst is '" + test.dst + "'", function(done) {
-                    var args = [];
+                    const args = [];
                     args.push(test.src);
                     args.push(test.dst);
                     args.push(function(err, relativePaths) {
@@ -87,11 +85,11 @@ describe("enfsensure symlink paths", function() {
     describe("> sync", function() {
         describe("symlinkPathsSync()", function() {
             tests.forEach(function(test) {
-                var args = [];
+                const args = [];
                 args.push(test.src);
                 args.push(test.dst);
                 it("should return '" + JSON.stringify(test.result) + "' when src '" + test.src + "' and dst is '" + test.dst + "'", function() {
-                    var relativePaths = ensureSymlinkPathsSync.apply(null, args);
+                    const relativePaths = ensureSymlinkPathsSync.apply(null, args);
                     relativePaths.should.be.eql(test.result);
                 });
             });

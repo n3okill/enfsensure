@@ -6,23 +6,21 @@
 
 "use strict";
 
-var nodePath = require("path"),
-    nodeUtil = require("util"),
-    nodeOs = require("os"),
-    cwd = process.cwd(),
-    rimraf = require("rimraf"),
-    enFs = require("enfspatch"),
-    enfsmkdirp = require("enfsmkdirp"),
-    ensure = require("../"),
-    ensureLink = ensure.ensureLink,
-    ensureLinkSync = ensure.ensureLinkSync;
+const nodePath = require("path");
+const nodeOs = require("os");
+const cwd = process.cwd();
+const rimraf = require("rimraf");
+const enFs = require("enfspatch");
+const enfsmkdirp = require("enfsmkdirp");
+const ensure = require("../");
+const ensureLink = ensure.ensureLink;
+const ensureLinkSync = ensure.ensureLinkSync;
 
 
-describe("enfsensure link", function() {
-    var tmpPath, tests;
-    tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensurelink");
+describe("enfsensure link", function () {
+    const tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensurelink");
 
-    tests = [
+    const tests = [
         {src: "./foo.txt", dst: "./link.txt", fs: "file-success", ensure: "file-success"},
         {src: "./foo.txt", dst: "./dir-foo/link.txt", fs: "file-success", ensure: "file-success"},
         {src: "./foo.txt", dst: "./empty-dir/link.txt", fs: "file-success", ensure: "file-success"},
@@ -48,37 +46,27 @@ describe("enfsensure link", function() {
         {src: "./foo.txt", dst: "./dir-foo/foo.txt", fs: "file-error", ensure: "file-dst-exists"}
     ];
 
-    before(function() {
+    before(function () {
         enfsmkdirp.mkdirpSync(tmpPath);
         process.chdir(tmpPath);
     });
-    beforeEach(function() {
-        enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
-        ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
-        ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
-        ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
-        ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
-    });
-    afterEach(function() {
-        rimraf.sync(tmpPath + nodePath.sep + "*");
-    });
-    after(function() {
+    after(function () {
         process.chdir(cwd);
         rimraf.sync(tmpPath);
     });
 
 
     function FileSuccess(src, dst, fn, type) {
-        var self = this;
+        const self = this;
         this.src = src;
         this.dst = dst;
         this.fn = fn;
         this.type = type;
         this.done = null;
 
-        this.execute = function() {
-            it("should create link file using src '" + self.src + "' and dst '" + self.dst + "'", function(done) {
-                var args = [];
+        this.execute = function () {
+            it("should create link file using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
+                const args = [];
                 self.done = done;
                 args.push(self.src);
                 args.push(self.dst);
@@ -95,15 +83,14 @@ describe("enfsensure link", function() {
                 }
             });
         };
-        this.result = function(err) {
+        this.result = function (err) {
             if (err) {
                 return self.done(err);
             }
-            enFs.readFile(self.src, "utf8", function(errReadFile, srcContent) {
+            enFs.readFile(self.src, "utf8", function (errReadFile, srcContent) {
                 (errReadFile === null).should.be.equal(true);
-                var dstDir, dstBasename;
-                dstDir = nodePath.dirname(self.dst);
-                dstBasename = nodePath.basename(self.dst);
+                const dstDir = nodePath.dirname(self.dst);
+                const dstBasename = nodePath.basename(self.dst);
                 enFs.lstatSync(self.dst).isFile().should.be.equal(true);
                 enFs.readFileSync(self.dst, "utf8").should.be.equal(srcContent);
                 enFs.readdirSync(dstDir).indexOf(dstBasename).should.be.greaterThanOrEqual(0);
@@ -113,7 +100,7 @@ describe("enfsensure link", function() {
     }
 
     function FileError(src, dst, fn, type) {
-        var self = this;
+        const self = this;
         this.src = src;
         this.dst = dst;
         this.fn = fn;
@@ -121,12 +108,12 @@ describe("enfsensure link", function() {
         this.done = null;
         this.statBefore = null;
 
-        this.execute = function() {
-            it("should throw error using '" + self.src + "' and dst '" + self.dst + "'", function(done) {
+        this.execute = () => {
+            it("should throw error using '" + self.src + "' and dst '" + self.dst + "'", function (done) {
                 self.done = done;
-                enFs.stat(nodePath.dirname(self.dst), function(errBefore, stat) {
+                enFs.stat(nodePath.dirname(self.dst), function (errBefore, stat) {
                     self.statBefore = stat;
-                    var args = [];
+                    const args = [];
                     args.push(self.src);
                     args.push(self.dst);
                     if (self.type === "async") {
@@ -143,12 +130,12 @@ describe("enfsensure link", function() {
                 });
             });
         };
-        this.result = function(err) {
+        this.result = function (err) {
             err.should.be.instanceOf(Error);
             //ensure that directories aren't created if there's an error
-            enFs.stat(nodePath.dirname(self.dst), function(errAfter, statAfter) {
-                if (self.statBefore === undefined) {
-                    (statAfter === undefined).should.be.equal(true);
+            enFs.stat(nodePath.dirname(self.dst), function (errAfter, statAfter) {
+                if (typeof self.statBefore === "undefined") {
+                    (typeof statAfter === "undefined").should.be.equal(true);
                     return self.done();
                 }
                 self.statBefore.isDirectory().should.be.equal(statAfter.isDirectory());
@@ -157,9 +144,8 @@ describe("enfsensure link", function() {
         };
     }
 
-
     function FileDstExists(src, dst, fn, type) {
-        var self = this;
+        const self = this;
         this.src = src;
         this.dst = dst;
         this.fn = fn;
@@ -167,12 +153,12 @@ describe("enfsensure link", function() {
         this.done = null;
         this.contentBefore = null;
 
-        this.execute = function() {
-            it("should do nothing using src '" + self.src + "' and dst '" + self.dst + "'", function(done) {
+        this.execute = function () {
+            it("should do nothing using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
                 self.done = done;
                 self.contentBefore = enFs.readFileSync(self.dst, "utf8");
 
-                var args = [];
+                const args = [];
                 args.push(self.src);
                 args.push(self.dst);
                 if (self.type === "async") {
@@ -188,16 +174,26 @@ describe("enfsensure link", function() {
                 }
             });
         };
-        this.result = function(err) {
+        this.result = function (err) {
             (err === null).should.be.equal(true);
             enFs.readFileSync(self.dst, "utf8").should.be.equal(self.contentBefore);
             self.done();
         };
     }
 
-    describe("> async", function() {
-        describe("fs.link()", function() {
-            tests.forEach(function(test) {
+    describe("> async", function () {
+        describe("fs.link()", function () {
+            beforeEach(function () {
+                enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
+                ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
+                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
+                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
+                ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
+            });
+            afterEach(function (done) {
+                rimraf(tmpPath + nodePath.sep + "*",done);
+            });
+            tests.forEach(function (test) {
                 switch (test.fs) {
                     case "file-success":
                         (new FileSuccess(test.src, test.dst, enFs.link, "async")).execute();
@@ -214,8 +210,18 @@ describe("enfsensure link", function() {
             });
         });
 
-        describe("ensureLink()", function() {
-            tests.forEach(function(test) {
+        describe("ensureLink()", function () {
+            beforeEach(function () {
+                enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
+                ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
+                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
+                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
+                ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
+            });
+            afterEach(function (done) {
+                rimraf(tmpPath + nodePath.sep + "*",done);
+            });
+            tests.forEach(function (test) {
                 switch (test.ensure) {
                     case "file-success":
                         (new FileSuccess(test.src, test.dst, ensureLink, "async")).execute();
@@ -233,9 +239,19 @@ describe("enfsensure link", function() {
         });
     });
 
-    describe("> sync", function() {
-        describe("fs.linkSync()", function() {
-            tests.forEach(function(test) {
+    describe("> sync", function () {
+        describe("fs.linkSync()", function () {
+            beforeEach(function () {
+                enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
+                ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
+                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
+                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
+                ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
+            });
+            afterEach(function (done) {
+                rimraf(tmpPath + nodePath.sep + "*",done);
+            });
+            tests.forEach(function (test) {
                 switch (test.fs) {
                     case "file-success":
                         (new FileSuccess(test.src, test.dst, enFs.linkSync, "sync")).execute();
@@ -252,8 +268,18 @@ describe("enfsensure link", function() {
             });
         });
 
-        describe("ensureLinkSync()", function() {
-            tests.forEach(function(test) {
+        describe("ensureLinkSync()", function () {
+            beforeEach(function () {
+                enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
+                ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
+                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
+                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
+                ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
+            });
+            afterEach(function (done) {
+                rimraf(tmpPath + nodePath.sep + "*",done);
+            });
+            tests.forEach(function (test) {
                 switch (test.ensure) {
                     case "file-success":
                         (new FileSuccess(test.src, test.dst, ensureLinkSync, "sync")).execute();

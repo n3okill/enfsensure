@@ -6,22 +6,21 @@
 
 "use strict";
 
-var nodePath = require("path"),
-    nodeOs = require("os"),
-    rimraf = require("rimraf"),
-    enfsmkdirp = require("enfsmkdirp"),
-    enFs = require("enfspatch"),
-    ensure = require("../"),
-    cwd = process.cwd(),
-    ensureFile = ensure.ensureFile,
-    ensureFileSync = ensure.ensureFileSync,
-    ensureDir = ensure.ensureDir,
-    ensureDirSync = ensure.ensureDirSync;
+const nodePath = require("path");
+const nodeOs = require("os");
+const rimraf = require("rimraf");
+const enfsmkdirp = require("enfsmkdirp");
+const enFs = require("enfspatch");
+const ensure = require("../");
+const cwd = process.cwd();
+const ensureFile = ensure.ensureFile;
+const ensureFileSync = ensure.ensureFileSync;
+const ensureDir = ensure.ensureDir;
+const ensureDirSync = ensure.ensureDirSync;
 
 
 describe("enfsensure create", function() {
-    var tmpPath;
-    tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensurecreate");
+    const tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensurecreate");
 
     before(function() {
         enfsmkdirp.mkdirpSync(tmpPath);
@@ -37,7 +36,7 @@ describe("enfsensure create", function() {
     describe("> async", function() {
         describe("> when the file and directory does not exist", function() {
             it("should create the file", function(done) {
-                var file = nodePath.join(tmpPath, Math.random() + "test", Math.random() + ".txt");
+                const file = nodePath.join(tmpPath, Math.random() + "test", Math.random() + ".txt");
                 enFs.existStatSync(file).should.be.equal(false);
                 ensureFile(file, function(errEnsure) {
                     (errEnsure === null).should.be.equal(true);
@@ -48,7 +47,7 @@ describe("enfsensure create", function() {
         });
         describe("> when the file does exist", function() {
             it("should not modify the file", function(done) {
-                var file = nodePath.join(tmpPath, Math.random() + "test", Math.random() + ".txt");
+                const file = nodePath.join(tmpPath, Math.random() + "test", Math.random() + ".txt");
                 ensureDir(nodePath.dirname(file), function(errEnsureDir) {
                     (errEnsureDir === null).should.be.equal(true);
                     enFs.writeFileSync(file, "hello world!", "utf8");
@@ -60,13 +59,13 @@ describe("enfsensure create", function() {
                 });
             });
             it("should append to the file", function(done) {
-                var file = nodePath.join(tmpPath, Math.random() + "test", Math.random() + ".txt");
+                const file = nodePath.join(tmpPath, Math.random() + "test", Math.random() + ".txt");
                 ensureDir(nodePath.dirname(file), function(errEnsureDir) {
                     (errEnsureDir === null).should.be.equal(true);
                     enFs.writeFileSync(file, "hello world!", "utf8");
                     ensureFile(file, {data: " new content", append: true}, function(errEnsureFile) {
                         (errEnsureFile === null).should.be.equal(true);
-                        var data = enFs.readFileSync(file, "utf8");
+                        const data = enFs.readFileSync(file, "utf8");
                         data.should.be.equal("hello world! new content");
                         done();
                     });
@@ -77,7 +76,7 @@ describe("enfsensure create", function() {
     describe("> sync", function() {
         describe("> when the file and directory does not exist", function() {
             it("should create the file", function() {
-                var file = nodePath.join(tmpPath, Math.random() + "test", Math.random() + ".txt");
+                const file = nodePath.join(tmpPath, Math.random() + "test", Math.random() + ".txt");
                 enFs.existStatSync(file).should.be.equal(false);
                 ensureFileSync(file);
                 enFs.statSync(file).isFile().should.be.equal(true);
@@ -85,14 +84,14 @@ describe("enfsensure create", function() {
         });
         describe("> when the file does exist", function() {
             it("should not modify the file", function() {
-                var file = nodePath.join(tmpPath, Math.random() + "test", Math.random() + ".txt");
+                const file = nodePath.join(tmpPath, Math.random() + "test", Math.random() + ".txt");
                 ensureDirSync(nodePath.dirname(file));
                 enFs.writeFileSync(file, "Hello World!");
                 ensureFileSync(file);
                 enFs.readFileSync(file, "utf8").should.be.equal("Hello World!");
             });
             it("should append to the file", function() {
-                var file = nodePath.join(tmpPath, Math.random() + "test", Math.random() + ".txt");
+                const file = nodePath.join(tmpPath, Math.random() + "test", Math.random() + ".txt");
                 ensureDirSync(nodePath.dirname(file));
                 enFs.writeFileSync(file, "Hello World!");
                 ensureFileSync(file, {data: " new content", append: true});

@@ -7,24 +7,23 @@
 "use strict";
 
 
-var nodePath = require("path"),
-    nodeOs = require("os"),
-    nodeUtil = require("util"),
-    cwd = process.cwd(),
-    rimraf = require("rimraf"),
-    enFs = require("enfspatch"),
-    enfsmkdirp = require("enfsmkdirp"),
-    ensure = require("../"),
-    ensureSymlink = ensure.ensureSymlink,
-    ensureSymlinkSync = ensure.ensureSymlinkSync,
-    ensureSymlinkPaths = require("../lib/async/symlinkPaths");
+const nodePath = require("path");
+const nodeOs = require("os");
+const cwd = process.cwd();
+const rimraf = require("rimraf");
+const enFs = require("enfspatch");
+const enfsmkdirp = require("enfsmkdirp");
+const ensure = require("../");
+const ensureSymlink = ensure.ensureSymlink;
+const ensureSymlinkSync = ensure.ensureSymlinkSync;
+const ensureSymlinkPaths = require("../lib/async/symlinkPaths");
 
 
 describe("enfsensure symlink", function() {
-    var tmpPath, isWindows, tests, windowsTestLink;
-    tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensuresymlink");
-    isWindows = /^win/.test(process.platform);
-    tests = [
+    let windowsTestLink;
+    const tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensuresymlink");
+    const isWindows = /^win/.test(process.platform);
+    const tests = [
         {src: "./foo.txt", dst: "./symlink.txt", fs: "file-success", ensure: "file-success"},
         {src: "../foo.txt", dst: "./empty-dir/symlink.txt", fs: "file-success", ensure: "file-success"},
         {src: "./foo.txt", dst: "./dir-foo/symlink.txt", fs: "file-success", ensure: "file-success"},
@@ -92,7 +91,7 @@ describe("enfsensure symlink", function() {
 
 
     function FileSuccess(src, dst, fn, type) {
-        var self = this;
+        const self = this;
         this.src = src;
         this.dst = dst;
         this.fn = fn;
@@ -101,7 +100,7 @@ describe("enfsensure symlink", function() {
 
         this.execute = function() {
             it("should create symlink file using src '" + src + "' and dst '" + dst + "'", function(done) {
-                var args = [];
+                const args = [];
                 self.done = done;
                 args.push(self.src);
                 args.push(self.dst);
@@ -127,9 +126,8 @@ describe("enfsensure symlink", function() {
                 (errPaths === null).should.be.equal(true);
                 enFs.readFile(relative.toCwd, "utf8", function(errReadFile, srcContent) {
                     (errReadFile === null).should.be.equal(true);
-                    var dstDir, dstBasename;
-                    dstDir = nodePath.dirname(self.dst);
-                    dstBasename = nodePath.basename(self.dst);
+                    const dstDir = nodePath.dirname(self.dst);
+                    const dstBasename = nodePath.basename(self.dst);
                     enFs.lstat(self.dst, function(errStat, stat) {
                         (errStat === null).should.be.equal(true);
                         enFs.readFile(self.dst, "utf8", function(errReadDst, dstContent) {
@@ -150,7 +148,7 @@ describe("enfsensure symlink", function() {
     }
 
     function FileError(src, dst, fn, type) {
-        var self = this;
+        const self = this;
         this.src = src;
         this.dst = dst;
         this.fn = fn;
@@ -163,7 +161,7 @@ describe("enfsensure symlink", function() {
                 self.done = done;
                 enFs.stat(nodePath.dirname(self.dst), function(errBefore, stat) {
                     self.statBefore = stat;
-                    var args = [];
+                    const args = [];
                     args.push(self.src);
                     args.push(self.dst);
                     if (self.type === "async") {
@@ -188,8 +186,8 @@ describe("enfsensure symlink", function() {
             err.should.be.instanceOf(Error);
             //ensure that directories aren't created if there's an error
             enFs.stat(nodePath.dirname(self.dst), function(errAfter, statAfter) {
-                if (self.statBefore === undefined) {
-                    (statAfter === undefined).should.be.equal(true);
+                if (typeof self.statBefore === "undefined") {
+                    (typeof statAfter === "undefined").should.be.equal(true);
                     return self.done();
                 }
                 self.statBefore.isDirectory().should.be.equal(statAfter.isDirectory());
@@ -199,7 +197,7 @@ describe("enfsensure symlink", function() {
     }
 
     function FileDstExists(src, dst, fn, type) {
-        var self = this;
+        const self = this;
         this.src = src;
         this.dst = dst;
         this.fn = fn;
@@ -213,7 +211,7 @@ describe("enfsensure symlink", function() {
                 enFs.readFile(self.dst, "utf8", function(errBefore, contentBefore) {
                     self.contentBefore = contentBefore;
 
-                    var args = [];
+                    const args = [];
                     args.push(self.src);
                     args.push(self.dst);
                     if (self.type === "async") {
@@ -243,7 +241,7 @@ describe("enfsensure symlink", function() {
     }
 
     function FileBroken(src, dst, fn, type) {
-        var self = this;
+        const self = this;
         this.src = src;
         this.dst = dst;
         this.fn = fn;
@@ -253,7 +251,7 @@ describe("enfsensure symlink", function() {
         this.execute = function() {
             it("should create broken symlink file using src '" + self.src + "' and dst '" + self.dst + "'", function(done) {
                 self.done = done;
-                var args = [];
+                const args = [];
                 args.push(self.src);
                 args.push(self.dst);
                 if (self.type === "async") {
@@ -290,7 +288,7 @@ describe("enfsensure symlink", function() {
     }
 
     function DirSuccess(src, dst, fn, type) {
-        var self = this;
+        const self = this;
         this.src = src;
         this.dst = dst;
         this.fn = fn;
@@ -299,7 +297,7 @@ describe("enfsensure symlink", function() {
 
         this.execute = function() {
             it("should create symlink dir using src '" + self.src + "' and dst '" + self.dst + "'", function(done) {
-                var args = [];
+                const args = [];
                 self.done = done;
                 args.push(self.src);
                 args.push(self.dst);
@@ -344,7 +342,7 @@ describe("enfsensure symlink", function() {
     }
 
     function DirBroken(src, dst, fn, type) {
-        var self = this;
+        const self = this;
         this.src = src;
         this.dst = dst;
         this.fn = fn;
@@ -354,7 +352,7 @@ describe("enfsensure symlink", function() {
         this.execute = function() {
             it("should create broken symlink dir using src '" + self.src + "' and dst '" + self.dst + "'", function(done) {
                 self.done = done;
-                var args = [];
+                const args = [];
                 args.push(self.src);
                 args.push(self.dst);
                 if (self.type === "async") {
@@ -393,7 +391,7 @@ describe("enfsensure symlink", function() {
     }
 
     function DirError(src, dst, fn, type) {
-        var self = this;
+        const self = this;
         this.src = src;
         this.dst = dst;
         this.fn = fn;
@@ -406,7 +404,7 @@ describe("enfsensure symlink", function() {
                 self.done = done;
                 enFs.stat(nodePath.dirname(self.dst), function(errBefore, stat) {
                     self.statBefore = stat;
-                    var args = [];
+                    const args = [];
                     args.push(self.src);
                     args.push(self.dst);
                     if (self.type === "async") {
@@ -441,7 +439,7 @@ describe("enfsensure symlink", function() {
     }
 
     function DirDstExists(src, dst, fn, type) {
-        var self = this;
+        const self = this;
         this.src = src;
         this.dst = dst;
         this.fn = fn;
@@ -455,7 +453,7 @@ describe("enfsensure symlink", function() {
                 enFs.readdir(self.dst, function(errBefore, contentBefore) {
                     self.contentBefore = contentBefore;
 
-                    var args = [];
+                    const args = [];
                     args.push(self.src);
                     args.push(self.dst);
                     if (self.type === "async") {

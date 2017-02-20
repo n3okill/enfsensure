@@ -6,22 +6,20 @@
 "use strict";
 
 
-var nodePath = require("path"),
-    nodeUtil = require("util"),
-    nodeOs = require("os"),
-    cwd = process.cwd(),
-    rimraf = require("rimraf"),
-    enFs = require("enfspatch"),
-    enfsmkdirp = require("enfsmkdirp"),
-    ensure = require("../"),
-    ensureSymlinkType = require("../lib/async/symlinkType"),
-    ensureSymlinkTypeSync = require("../lib/sync/symlinkType");
+const nodePath = require("path");
+const nodeOs = require("os");
+const cwd = process.cwd();
+const rimraf = require("rimraf");
+const enFs = require("enfspatch");
+const enfsmkdirp = require("enfsmkdirp");
+const ensure = require("../");
+const ensureSymlinkType = require("../lib/async/symlinkType");
+const ensureSymlinkTypeSync = require("../lib/sync/symlinkType");
 
 describe("enfsensure symlink type", function() {
-    var tmpPath, tests;
-    tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensuresymlinkType");
+    const tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensuresymlinkType");
 
-    tests = [
+    const tests = [
         // [{arguments} [srcpath, dirpath, [type] , result]
         // smart file type checking
         {src: "./foo.txt", result: "file"},
