@@ -67,6 +67,17 @@ describe.only("enfsensure symlink", function () {
         rimraf.sync(tmpPath);
     });
 
+    beforeEach(function () {
+        enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
+        ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
+        ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
+        ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
+        ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
+    });
+    afterEach(function (done) {
+        rimraf(tmpPath + nodePath.sep + "*", done);
+    });
+
     /*class Test {
      constructor(src, dst, fn, type) {
      this.src = src;
@@ -666,16 +677,6 @@ describe.only("enfsensure symlink", function () {
 
     describe("> async", function () {
         describe("fs.symlink()", function () {
-            beforeEach(function () {
-                enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
-                ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
-                ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
-            });
-            afterEach(function (done) {
-                rimraf(tmpPath + nodePath.sep + "*", done);
-            });
             tests.forEach(function (test) {
                 switch (test.fs) {
                     case "file-success":
@@ -709,16 +710,6 @@ describe.only("enfsensure symlink", function () {
         });
 
         describe("ensureSymlink()", function () {
-            beforeEach(function () {
-                enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
-                ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
-                ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
-            });
-            afterEach(function () {
-                rimraf.sync(tmpPath + nodePath.sep + "*");
-            });
             tests.forEach(function (test) {
                 switch (test.ensure) {
                     case "file-success":
@@ -754,16 +745,6 @@ describe.only("enfsensure symlink", function () {
 
     describe("> sync", function () {
         describe("fs.symlinkSync()", function () {
-            beforeEach(function () {
-                enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
-                ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
-                ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
-            });
-            afterEach(function () {
-                rimraf.sync(tmpPath + nodePath.sep + "*");
-            });
             tests.forEach(function (test) {
                 switch (test.fs) {
                     case "file-success":
@@ -797,16 +778,6 @@ describe.only("enfsensure symlink", function () {
         });
 
         describe("ensureSymlinkSync()", function () {
-            beforeEach(function () {
-                enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
-                ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
-                ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
-            });
-            afterEach(function () {
-                rimraf.sync(tmpPath + nodePath.sep + "*");
-            });
             tests.forEach(function (test) {
                 switch (test.ensure) {
                     case "file-success":
