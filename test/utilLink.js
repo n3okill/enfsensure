@@ -119,7 +119,6 @@ class FileDstExists extends Test {
     }
 }
 
-
 class FileBroken extends Test {
     constructor(src, dst, fn, type) {
         super(src, dst, fn, type);
@@ -135,7 +134,6 @@ class FileBroken extends Test {
         super.result();
     }
 }
-
 
 class DirSuccess extends Test {
     constructor(src, dst, fn, type) {
@@ -175,7 +173,6 @@ class DirSuccess extends Test {
     }
 }
 
-
 class DirBroken extends Test {
     constructor(src, dst, fn, type) {
         super(src, dst, fn, type);
@@ -209,7 +206,6 @@ class DirBroken extends Test {
     }
 }
 
-
 class DirError extends Test {
     constructor(src, dst, fn, type) {
         super(src, dst, fn, type);
@@ -240,7 +236,6 @@ class DirError extends Test {
         });
     }
 }
-
 
 class DirDstExists extends Test {
     constructor(src, dst, fn, type) {
