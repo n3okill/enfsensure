@@ -42,10 +42,6 @@ class Test {
             }
         }
     }
-
-    result() {
-        throw new Error("Not implemented.");
-    }
 }
 
 class FileSuccess extends Test {
@@ -57,10 +53,6 @@ class FileSuccess extends Test {
         it(msg, (done) => {
             super.execute(done);
         });
-    }
-
-    result(err) {
-        super.result();
     }
 }
 
@@ -79,10 +71,6 @@ class FileError extends Test {
             });
         });
     }
-
-    result(err) {
-        super.result();
-    }
 }
 
 
@@ -100,10 +88,6 @@ class FileDstExists extends Test {
             });
         });
     }
-
-    result(err) {
-        super.result();
-    }
 }
 
 class FileBroken extends Test {
@@ -115,10 +99,6 @@ class FileBroken extends Test {
         it(msg, (done) => {
             super.execute(done);
         });
-    }
-
-    result(err) {
-        super.result();
     }
 }
 
@@ -132,32 +112,6 @@ class DirSuccess extends Test {
             super.execute(done);
         });
     }
-
-    result(err) {
-        if (err && err.code === "EPERM" && isWindows) {
-            return this.done();
-        }
-        (err === null).should.be.equal(true);
-        ensureSymlinkPaths(this.src, this.dst, (errPaths, relative) => {
-            (errPaths === null).should.be.equal(true);
-            enFs.readdir(relative.toCwd, (errReadDir, srcContent) => {
-                (errReadDir === null).should.be.equal(true);
-                enFs.lstat(this.dst, (errStat, stat) => {
-                    (errStat === null).should.be.equal(true);
-                    enFs.readdir(this.dst, (errReadDst, dstContent) => {
-                        (errReadDst === null).should.be.equal(true);
-                        enFs.readdir(nodePath.dirname(this.dst), (errReadDir2, dstDirContent) => {
-                            (errReadDir2 === null).should.be.equal(true);
-                            stat.isSymbolicLink().should.be.equal(true);
-                            srcContent.should.be.eql(dstContent);
-                            dstDirContent.indexOf(nodePath.basename(this.dst)).should.be.greaterThanOrEqual(0);
-                            this.done();
-                        });
-                    });
-                });
-            });
-        });
-    }
 }
 
 class DirBroken extends Test {
@@ -168,27 +122,6 @@ class DirBroken extends Test {
     execute() {
         it("should create broken symlink dir using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
             super.execute(done);
-        });
-    }
-
-    result(err) {
-        if (err && err.code === "EPERM" && isWindows) {
-            return this.done();
-        }
-        (err === null).should.be.equal(true);
-        enFs.lstat(this.dst, (errStat, stat) => {
-            (errStat === null).should.be.equal(true);
-            enFs.readdir(nodePath.dirname(this.dst), (errReaddir, contents) => {
-                (errReaddir === null).should.be.equal(true);
-                stat.isSymbolicLink().should.be.equal(true);
-                contents.indexOf(nodePath.basename(this.dst)).should.be.greaterThanOrEqual(0);
-                enFs.readdir(this.dst, (errReadFile) => {
-                    if (errReadFile) {
-                        errReadFile.should.be.instanceOf(Error);
-                    }
-                    return this.done();
-                });
-            });
         });
     }
 }
@@ -206,22 +139,6 @@ class DirError extends Test {
             });
         });
     }
-
-    result(err) {
-        if (err && err.code === "EPERM" && isWindows) {
-            return this.done();
-        }
-        err.should.be.instanceOf(Error);
-        //ensure that directories aren't created if there's an error
-        enFs.stat(nodePath.dirname(this.dst), (errAfter, statAfter) => {
-            if (typeof this.statBefore === "undefined") {
-                (typeof statAfter === "undefined").should.be.equal(true);
-                return this.done();
-            }
-            this.statBefore.isDirectory().should.be.equal(statAfter.isDirectory());
-            return this.done();
-        });
-    }
 }
 
 class DirDstExists extends Test {
@@ -235,17 +152,6 @@ class DirDstExists extends Test {
                 this.contentBefore = contentBefore;
                 super.execute(done);
             });
-        });
-    }
-
-    result(err) {
-        if (err && err.code === "EPERM" && isWindows) {
-            return this.done();
-        }
-        (err === null).should.be.equal(true);
-        enFs.readdir(this.dst, (errAfter, contentAfter) => {
-            this.contentBefore.should.be.eql(contentAfter);
-            return this.done();
         });
     }
 }
