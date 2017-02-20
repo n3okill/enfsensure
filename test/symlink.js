@@ -132,16 +132,7 @@ describe("enfsensure symlink", function () {
             if (err && err.code === "EPERM" && isWindows) {
                 return this.done();
             }
-            err.should.be.instanceOf(Error);
-            //ensure that directories aren't created if there's an error
-            enFs.stat(nodePath.dirname(this.dst), (errAfter, statAfter) => {
-                if (typeof this.statBefore === "undefined") {
-                    (typeof statAfter === "undefined").should.be.equal(true);
-                    return this.done();
-                }
-                this.statBefore.isDirectory().should.be.equal(statAfter.isDirectory());
-                return this.done();
-            });
+            super.result(err);
         }
     }
 
@@ -160,11 +151,7 @@ describe("enfsensure symlink", function () {
             if (err && err.code === "EPERM" && isWindows) {
                 return this.done();
             }
-            (err === null).should.be.equal(true);
-            enFs.readFile(this.dst, "utf8", (errAfter, contentAfter) => {
-                this.contentBefore.should.be.equal(contentAfter);
-                return this.done();
-            });
+            super.result(err);
         }
     }
 
