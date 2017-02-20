@@ -63,13 +63,13 @@ class FileError extends Test {
         this.statBefore = null;
     }
 
-    execute(msg, done) {
-        let execute = super.execute.bind(this);
+    execute(msg) {
+        let execute = super.execute;
         let self = this;
         it(msg, (done) => {
             enFs.stat(nodePath.dirname(this.dst), (errBefore, stat) => {
                 self.statBefore = stat;
-                execute(done);
+                execute.call(self,done);
             });
         });
     }
@@ -83,12 +83,12 @@ class FileDstExists extends Test {
     }
 
     execute(msg) {
-        let execute = super.execute.bind(this);
+        let execute = super.execute;
         let self = this;
         it(msg, (done) => {
             enFs.readFile(this.dst, "utf8", (errBefore, contentBefore) => {
                 self.contentBefore = contentBefore;
-                execute(done);
+                execute.call(self,done);
             });
         });
     }
