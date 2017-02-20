@@ -19,8 +19,7 @@ const ensureSymlinkSync = ensure.ensureSymlinkSync;
 const ensureSymlinkPaths = require("../lib/async/symlinkPaths");
 
 
-describe("enfsensure symlink", function() {
-    let windowsTestLink;
+describe.only("enfsensure symlink", function () {
     const tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensuresymlink");
     const isWindows = /^win/.test(process.platform);
     const tests = [
@@ -59,26 +58,87 @@ describe("enfsensure symlink", function() {
         {src: "./dir-foo", dst: "./real-alpha/real-beta", fs: "dir-error", ensure: "dir-dst-exists"}
     ];
 
-    before(function() {
+    before(function () {
         enfsmkdirp.mkdirpSync(tmpPath);
         process.chdir(tmpPath);
-        if (isWindows) {
-            enFs.writeFileSync(nodePath.join(tmpPath, "windowsTest"), "");
-            try {
-                enFs.symlinkSync(nodePath.join(tmpPath, "windowsTestLink"), nodePath.join(tmpPath, "windowsTest"), "file");
-            } catch (err) {
-                if (err.code === "EPERM") {
-                    console.log("Windows symlink will not be tested because there is no permissions.");
-                    windowsTestLink = false;
-                }
-            }
-        }
     });
-    after(function() {
+    after(function () {
         process.chdir(cwd);
         rimraf.sync(tmpPath);
     });
 
+    /*class Test {
+     constructor(src, dst, fn, type) {
+     this.src = src;
+     this.dst = dst;
+     this.fn = fn;
+     this.type = type;
+     this.done = null;
+     }
+
+     execute() {
+     throw new Error("Not implemented.");
+     }
+
+     result() {
+     throw new Error("Not implemented.");
+     }
+     }*/
+
+    /*class FileSuccess extends Test {
+     constructor(src, dst, fn, type) {
+     super(src, dst, fn, type);
+     }
+
+     execute() {
+     it("should create symlink file using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
+     const args = [];
+     this.done = done;
+     args.push(this.src);
+     args.push(this.dst);
+     if (this.type === "async") {
+     args.push(this.result.bind(this));
+     return this.fn.apply(this, args);
+     } else {
+     try {
+     this.fn.apply(this, args);
+     this.result(null);
+     } catch (err) {
+     this.result(err);
+     }
+     }
+     });
+     }
+
+     result(err) {
+     if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
+     return this.done();
+     }
+     (err === null).should.be.equal(true);
+     ensureSymlinkPaths(this.src, this.dst, (errPaths, relative) => {
+     (errPaths === null).should.be.equal(true);
+     enFs.readFile(relative.toCwd, "utf8", (errReadFile, srcContent) => {
+     (errReadFile === null).should.be.equal(true);
+     const dstDir = nodePath.dirname(this.dst);
+     const dstBasename = nodePath.basename(this.dst);
+     enFs.lstat(this.dst, (errStat, stat) => {
+     (errStat === null).should.be.equal(true);
+     enFs.readFile(this.dst, "utf8", (errReadDst, dstContent) => {
+     (errReadDst === null).should.be.equal(true);
+     enFs.readdir(dstDir, (errReaddir, dstDirContent) => {
+     (errReaddir === null).should.be.equal(true);
+     stat.isSymbolicLink().should.be.equal(true);
+     srcContent.should.be.equal(dstContent);
+     dstDirContent.indexOf(dstBasename).should.be.greaterThanOrEqual(0);
+     this.done();
+     });
+     });
+     });
+     });
+
+     });
+     }
+     }*/
 
     function FileSuccess(src, dst, fn, type) {
         const self = this;
@@ -88,8 +148,8 @@ describe("enfsensure symlink", function() {
         this.type = type;
         this.done = null;
 
-        this.execute = function() {
-            it("should create symlink file using src '" + src + "' and dst '" + dst + "'", function(done) {
+        this.execute = function () {
+            it("should create symlink file using src '" + src + "' and dst '" + dst + "'", function (done) {
                 const args = [];
                 self.done = done;
                 args.push(self.src);
@@ -107,22 +167,22 @@ describe("enfsensure symlink", function() {
                 }
             });
         };
-        this.result = function(err) {
-            if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
+        this.result = function (err) {
+            if (err && err.code === "EPERM" && isWindows) {
                 return self.done();
             }
             (err === null).should.be.equal(true);
-            ensureSymlinkPaths(self.src, self.dst, function(errPaths, relative) {
+            ensureSymlinkPaths(self.src, self.dst, function (errPaths, relative) {
                 (errPaths === null).should.be.equal(true);
-                enFs.readFile(relative.toCwd, "utf8", function(errReadFile, srcContent) {
+                enFs.readFile(relative.toCwd, "utf8", function (errReadFile, srcContent) {
                     (errReadFile === null).should.be.equal(true);
                     const dstDir = nodePath.dirname(self.dst);
                     const dstBasename = nodePath.basename(self.dst);
-                    enFs.lstat(self.dst, function(errStat, stat) {
+                    enFs.lstat(self.dst, function (errStat, stat) {
                         (errStat === null).should.be.equal(true);
-                        enFs.readFile(self.dst, "utf8", function(errReadDst, dstContent) {
+                        enFs.readFile(self.dst, "utf8", function (errReadDst, dstContent) {
                             (errReadDst === null).should.be.equal(true);
-                            enFs.readdir(dstDir, function(errReaddir, dstDirContent) {
+                            enFs.readdir(dstDir, function (errReaddir, dstDirContent) {
                                 (errReaddir === null).should.be.equal(true);
                                 stat.isSymbolicLink().should.be.equal(true);
                                 srcContent.should.be.equal(dstContent);
@@ -137,6 +197,51 @@ describe("enfsensure symlink", function() {
         };
     }
 
+    /*class FileError extends Test {
+     constructor(src, dst, fn, type) {
+     super(src, dst, fn, type);
+     this.statBefore = null;
+     }
+
+     execute() {
+     it("should return error when creating symlink file using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
+     this.done = done;
+     enFs.stat(nodePath.dirname(this.dst), (errBefore, stat) => {
+     this.statBefore = stat;
+     const args = [];
+     args.push(this.src);
+     args.push(this.dst);
+     if (this.type === "async") {
+     args.push(this.result.bind(this));
+     return this.fn.apply(null, args);
+     } else {
+     try {
+     this.fn.apply(null, args);
+     this.result(null);
+     } catch (err) {
+     this.result(err);
+     }
+     }
+     });
+     });
+     }
+
+     result(err) {
+     if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
+     return this.done();
+     }
+     err.should.be.instanceOf(Error);
+     //ensure that directories aren't created if there's an error
+     enFs.stat(nodePath.dirname(this.dst), (errAfter, statAfter) => {
+     if (typeof this.statBefore === "undefined") {
+     (typeof statAfter === "undefined").should.be.equal(true);
+     return this.done();
+     }
+     this.statBefore.isDirectory().should.be.equal(statAfter.isDirectory());
+     return this.done();
+     });
+     }
+     }*/
     function FileError(src, dst, fn, type) {
         const self = this;
         this.src = src;
@@ -146,10 +251,10 @@ describe("enfsensure symlink", function() {
         this.done = null;
         this.statBefore = null;
 
-        this.execute = function() {
-            it("should return error when creating symlink file using src '" + self.src + "' and dst '" + self.dst + "'", function(done) {
+        this.execute = function () {
+            it("should return error when creating symlink file using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
                 self.done = done;
-                enFs.stat(nodePath.dirname(self.dst), function(errBefore, stat) {
+                enFs.stat(nodePath.dirname(self.dst), function (errBefore, stat) {
                     self.statBefore = stat;
                     const args = [];
                     args.push(self.src);
@@ -169,13 +274,13 @@ describe("enfsensure symlink", function() {
             });
         };
 
-        this.result = function(err) {
-            if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
+        this.result = function (err) {
+            if (err && err.code === "EPERM" && isWindows) {
                 return self.done();
             }
             err.should.be.instanceOf(Error);
             //ensure that directories aren't created if there's an error
-            enFs.stat(nodePath.dirname(self.dst), function(errAfter, statAfter) {
+            enFs.stat(nodePath.dirname(self.dst), function (errAfter, statAfter) {
                 if (typeof self.statBefore === "undefined") {
                     (typeof statAfter === "undefined").should.be.equal(true);
                     return self.done();
@@ -186,6 +291,48 @@ describe("enfsensure symlink", function() {
         };
     }
 
+    /*class FileDstExists extends Test {
+     constructor(src, dst, fn, type) {
+     super(src, dst, fn, type);
+     this.contentBefore = null;
+     }
+
+     execute() {
+     it("should do nothing using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
+     this.done = done;
+     enFs.readFile(this.dst, "utf8", (errBefore, contentBefore) => {
+     this.contentBefore = contentBefore;
+
+     const args = [];
+     args.push(this.src);
+     args.push(this.dst);
+     if (this.type === "async") {
+     args.push(this.result.bind(this));
+     return this.fn.apply(null, args);
+     } else {
+     try {
+     this.fn.apply(null, args);
+     this.result(null);
+     } catch (err) {
+     this.result(err);
+     }
+     }
+     });
+     });
+     }
+
+     result(err) {
+     if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
+     return this.done();
+     }
+     (err === null).should.be.equal(true);
+     enFs.readFile(this.dst, "utf8", (errAfter, contentAfter) => {
+     this.contentBefore.should.be.equal(contentAfter);
+     return this.done();
+     });
+     }
+     }*/
+
     function FileDstExists(src, dst, fn, type) {
         const self = this;
         this.src = src;
@@ -195,10 +342,10 @@ describe("enfsensure symlink", function() {
         this.done = null;
         this.contentBefore = null;
 
-        this.execute = function() {
-            it("should do nothing using src '" + self.src + "' and dst '" + self.dst + "'", function(done) {
+        this.execute = function () {
+            it("should do nothing using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
                 self.done = done;
-                enFs.readFile(self.dst, "utf8", function(errBefore, contentBefore) {
+                enFs.readFile(self.dst, "utf8", function (errBefore, contentBefore) {
                     self.contentBefore = contentBefore;
 
                     const args = [];
@@ -218,17 +365,62 @@ describe("enfsensure symlink", function() {
                 });
             });
         };
-        this.result = function(err) {
-            if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
+        this.result = function (err) {
+            if (err && err.code === "EPERM" && isWindows) {
                 return self.done();
             }
             (err === null).should.be.equal(true);
-            enFs.readFile(self.dst, "utf8", function(errAfter, contentAfter) {
+            enFs.readFile(self.dst, "utf8", function (errAfter, contentAfter) {
                 self.contentBefore.should.be.equal(contentAfter);
                 return self.done();
             });
         };
     }
+
+    /*class FileBroken extends Test {
+     constructor(src, dst, fn, type) {
+     super(src, dst, fn, type);
+     }
+
+     execute() {
+     it("should create broken symlink file using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
+     this.done = done;
+     const args = [];
+     args.push(this.src);
+     args.push(this.dst);
+     if (this.type === "async") {
+     args.push(this.result.bind(this));
+     return this.fn.apply(null, args);
+     } else {
+     try {
+     this.fn.apply(null, args);
+     this.result(null);
+     } catch (err) {
+     this.result(err);
+     }
+     }
+     });
+     }
+
+     result(err) {
+     if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
+     return this.done();
+     }
+     (err === null).should.be.equal(true);
+     enFs.lstat(this.dst, (errStat, stat) => {
+     (errStat === null).should.be.equal(true);
+     enFs.readdir(nodePath.dirname(this.dst), (errReaddir, contents) =>{
+     (errReaddir === null).should.be.equal(true);
+     stat.isSymbolicLink().should.be.equal(true);
+     contents.indexOf(nodePath.basename(this.dst)).should.be.greaterThanOrEqual(0);
+     enFs.readFile(this.dst, "utf8", (errReadFile) => {
+     errReadFile.should.be.instanceOf(Error);
+     return this.done();
+     });
+     });
+     });
+     }
+     }*/
 
     function FileBroken(src, dst, fn, type) {
         const self = this;
@@ -238,8 +430,8 @@ describe("enfsensure symlink", function() {
         this.type = type;
         this.done = null;
 
-        this.execute = function() {
-            it("should create broken symlink file using src '" + self.src + "' and dst '" + self.dst + "'", function(done) {
+        this.execute = function () {
+            it("should create broken symlink file using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
                 self.done = done;
                 const args = [];
                 args.push(self.src);
@@ -257,18 +449,18 @@ describe("enfsensure symlink", function() {
                 }
             });
         };
-        this.result = function(err) {
-            if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
+        this.result = function (err) {
+            if (err && err.code === "EPERM" && isWindows) {
                 return self.done();
             }
             (err === null).should.be.equal(true);
-            enFs.lstat(self.dst, function(errStat, stat) {
+            enFs.lstat(self.dst, function (errStat, stat) {
                 (errStat === null).should.be.equal(true);
-                enFs.readdir(nodePath.dirname(self.dst), function(errReaddir, contents) {
+                enFs.readdir(nodePath.dirname(self.dst), function (errReaddir, contents) {
                     (errReaddir === null).should.be.equal(true);
                     stat.isSymbolicLink().should.be.equal(true);
                     contents.indexOf(nodePath.basename(self.dst)).should.be.greaterThanOrEqual(0);
-                    enFs.readFile(self.dst, "utf8", function(errReadFile) {
+                    enFs.readFile(self.dst, "utf8", function (errReadFile) {
                         errReadFile.should.be.instanceOf(Error);
                         return self.done();
                     });
@@ -285,8 +477,8 @@ describe("enfsensure symlink", function() {
         this.type = type;
         this.done = null;
 
-        this.execute = function() {
-            it("should create symlink dir using src '" + self.src + "' and dst '" + self.dst + "'", function(done) {
+        this.execute = function () {
+            it("should create symlink dir using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
                 const args = [];
                 self.done = done;
                 args.push(self.src);
@@ -304,20 +496,20 @@ describe("enfsensure symlink", function() {
                 }
             });
         };
-        this.result = function(err) {
-            if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
+        this.result = function (err) {
+            if (err && err.code === "EPERM" && isWindows) {
                 return self.done();
             }
             (err === null).should.be.equal(true);
-            ensureSymlinkPaths(self.src, self.dst, function(errPaths, relative) {
+            ensureSymlinkPaths(self.src, self.dst, function (errPaths, relative) {
                 (errPaths === null).should.be.equal(true);
-                enFs.readdir(relative.toCwd, function(errReadDir, srcContent) {
+                enFs.readdir(relative.toCwd, function (errReadDir, srcContent) {
                     (errReadDir === null).should.be.equal(true);
-                    enFs.lstat(self.dst, function(errStat, stat) {
+                    enFs.lstat(self.dst, function (errStat, stat) {
                         (errStat === null).should.be.equal(true);
-                        enFs.readdir(self.dst, function(errReadDst, dstContent) {
+                        enFs.readdir(self.dst, function (errReadDst, dstContent) {
                             (errReadDst === null).should.be.equal(true);
-                            enFs.readdir(nodePath.dirname(self.dst), function(errReadDir2, dstDirContent) {
+                            enFs.readdir(nodePath.dirname(self.dst), function (errReadDir2, dstDirContent) {
                                 (errReadDir2 === null).should.be.equal(true);
                                 stat.isSymbolicLink().should.be.equal(true);
                                 srcContent.should.be.eql(dstContent);
@@ -339,8 +531,8 @@ describe("enfsensure symlink", function() {
         this.type = type;
         this.done = null;
 
-        this.execute = function() {
-            it("should create broken symlink dir using src '" + self.src + "' and dst '" + self.dst + "'", function(done) {
+        this.execute = function () {
+            it("should create broken symlink dir using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
                 self.done = done;
                 const args = [];
                 args.push(self.src);
@@ -358,18 +550,18 @@ describe("enfsensure symlink", function() {
                 }
             });
         };
-        this.result = function(err) {
-            if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
+        this.result = function (err) {
+            if (err && err.code === "EPERM" && isWindows) {
                 return self.done();
             }
             (err === null).should.be.equal(true);
-            enFs.lstat(self.dst, function(errStat, stat) {
+            enFs.lstat(self.dst, function (errStat, stat) {
                 (errStat === null).should.be.equal(true);
-                enFs.readdir(nodePath.dirname(self.dst), function(errReaddir, contents) {
+                enFs.readdir(nodePath.dirname(self.dst), function (errReaddir, contents) {
                     (errReaddir === null).should.be.equal(true);
                     stat.isSymbolicLink().should.be.equal(true);
                     contents.indexOf(nodePath.basename(self.dst)).should.be.greaterThanOrEqual(0);
-                    enFs.readdir(self.dst, function(errReadFile) {
+                    enFs.readdir(self.dst, function (errReadFile) {
                         if (errReadFile) {
                             errReadFile.should.be.instanceOf(Error);
                         }
@@ -389,10 +581,10 @@ describe("enfsensure symlink", function() {
         this.done = null;
         this.statBefore = null;
 
-        this.execute = function() {
-            it("should return error when creating symlink dir using src '" + self.src + "' and dst '" + self.dst + "'", function(done) {
+        this.execute = function () {
+            it("should return error when creating symlink dir using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
                 self.done = done;
-                enFs.stat(nodePath.dirname(self.dst), function(errBefore, stat) {
+                enFs.stat(nodePath.dirname(self.dst), function (errBefore, stat) {
                     self.statBefore = stat;
                     const args = [];
                     args.push(self.src);
@@ -411,13 +603,13 @@ describe("enfsensure symlink", function() {
                 });
             });
         };
-        this.result = function(err) {
-            if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
+        this.result = function (err) {
+            if (err && err.code === "EPERM" && isWindows) {
                 return self.done();
             }
             err.should.be.instanceOf(Error);
             //ensure that directories aren't created if there's an error
-            enFs.stat(nodePath.dirname(self.dst), function(errAfter, statAfter) {
+            enFs.stat(nodePath.dirname(self.dst), function (errAfter, statAfter) {
                 if (self.statBefore === undefined) {
                     (statAfter === undefined).should.be.equal(true);
                     return self.done();
@@ -437,10 +629,10 @@ describe("enfsensure symlink", function() {
         this.done = null;
         this.contentBefore = null;
 
-        this.execute = function() {
-            it("should do nothing using src '" + self.src + "' and dst '" + self.dst + "'", function(done) {
+        this.execute = function () {
+            it("should do nothing using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
                 self.done = done;
-                enFs.readdir(self.dst, function(errBefore, contentBefore) {
+                enFs.readdir(self.dst, function (errBefore, contentBefore) {
                     self.contentBefore = contentBefore;
 
                     const args = [];
@@ -460,31 +652,31 @@ describe("enfsensure symlink", function() {
                 });
             });
         };
-        this.result = function(err) {
-            if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
+        this.result = function (err) {
+            if (err && err.code === "EPERM" && isWindows) {
                 return self.done();
             }
             (err === null).should.be.equal(true);
-            enFs.readdir(self.dst, function(errAfter, contentAfter) {
+            enFs.readdir(self.dst, function (errAfter, contentAfter) {
                 self.contentBefore.should.be.eql(contentAfter);
                 return self.done();
             });
         };
     }
 
-    describe("> async", function() {
-        describe("fs.symlink()", function() {
-            beforeEach(function() {
+    describe("> async", function () {
+        describe("fs.symlink()", function () {
+            beforeEach(function () {
                 enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
                 ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
                 ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
                 ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
                 ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
             });
-            afterEach(function() {
+            afterEach(function () {
                 rimraf.sync(tmpPath + nodePath.sep + "*");
             });
-            tests.forEach(function(test) {
+            tests.forEach(function (test) {
                 switch (test.fs) {
                     case "file-success":
                         (new FileSuccess(test.src, test.dst, enFs.symlink, "async")).execute();
@@ -516,18 +708,18 @@ describe("enfsensure symlink", function() {
             });
         });
 
-        describe("ensureSymlink()", function() {
-            beforeEach(function() {
+        describe("ensureSymlink()", function () {
+            beforeEach(function () {
                 enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
                 ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
                 ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
                 ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
                 ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
             });
-            afterEach(function() {
+            afterEach(function () {
                 rimraf.sync(tmpPath + nodePath.sep + "*");
             });
-            tests.forEach(function(test) {
+            tests.forEach(function (test) {
                 switch (test.ensure) {
                     case "file-success":
                         (new FileSuccess(test.src, test.dst, ensureSymlink, "async")).execute();
@@ -560,19 +752,19 @@ describe("enfsensure symlink", function() {
         });
     });
 
-    describe("> sync", function() {
-        describe("fs.symlinkSync()", function() {
-            beforeEach(function() {
+    describe("> sync", function () {
+        describe("fs.symlinkSync()", function () {
+            beforeEach(function () {
                 enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
                 ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
                 ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
                 ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
                 ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
             });
-            afterEach(function() {
+            afterEach(function () {
                 rimraf.sync(tmpPath + nodePath.sep + "*");
             });
-            tests.forEach(function(test) {
+            tests.forEach(function (test) {
                 switch (test.fs) {
                     case "file-success":
                         (new FileSuccess(test.src, test.dst, enFs.symlinkSync, "sync")).execute();
@@ -604,18 +796,18 @@ describe("enfsensure symlink", function() {
             });
         });
 
-        describe("ensureSymlinkSync()", function() {
-            beforeEach(function() {
+        describe("ensureSymlinkSync()", function () {
+            beforeEach(function () {
                 enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
                 ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
                 ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
                 ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
                 ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
             });
-            afterEach(function() {
+            afterEach(function () {
                 rimraf.sync(tmpPath + nodePath.sep + "*");
             });
-            tests.forEach(function(test) {
+            tests.forEach(function (test) {
                 switch (test.ensure) {
                     case "file-success":
                         (new FileSuccess(test.src, test.dst, ensureSymlinkSync, "sync")).execute();
