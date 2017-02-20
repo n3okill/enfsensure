@@ -64,10 +64,11 @@ class FileError extends Test {
     }
 
     execute(msg, done) {
+        let execute = super.execute.bind(this);
         it(msg, (done) => {
             enFs.stat(nodePath.dirname(this.dst), (errBefore, stat) => {
                 this.statBefore = stat;
-                super.execute(done);
+                execute(done);
             });
         });
     }
