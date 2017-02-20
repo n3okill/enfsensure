@@ -114,7 +114,6 @@ describe("enfsensure symlink", function () {
                         });
                     });
                 });
-
             });
         }
     }
@@ -123,7 +122,6 @@ describe("enfsensure symlink", function () {
     class FileError extends UtilLink.FileError {
         constructor(src, dst, fn, type) {
             super(src, dst, fn, type);
-            this.statBefore = null;
         }
 
         execute() {
@@ -134,7 +132,16 @@ describe("enfsensure symlink", function () {
             if (err && err.code === "EPERM" && isWindows) {
                 return this.done();
             }
-            super.result(err);
+            err.should.be.instanceOf(Error);
+            //ensure that directories aren't created if there's an error
+            enFs.stat(nodePath.dirname(this.dst), (errAfter, statAfter) => {
+                if (typeof this.statBefore === "undefined") {
+                    (typeof statAfter === "undefined").should.be.equal(true);
+                    return this.done();
+                }
+                this.statBefore.isDirectory().should.be.equal(statAfter.isDirectory());
+                return this.done();
+            });
         }
     }
 
@@ -153,7 +160,11 @@ describe("enfsensure symlink", function () {
             if (err && err.code === "EPERM" && isWindows) {
                 return this.done();
             }
-            super.result(err);
+            (err === null).should.be.equal(true);
+            enFs.readFile(this.dst, "utf8", (errAfter, contentAfter) => {
+                this.contentBefore.should.be.equal(contentAfter);
+                return this.done();
+            });
         }
     }
 
@@ -321,7 +332,7 @@ describe("enfsensure symlink", function () {
 
 
     describe("> async", function () {
-        describe("fs.symlink()", function () {
+        describe("> fs.symlink()", function () {
             tests.forEach(function (test) {
                 switch (test.fs) {
                     case "file-success":
@@ -354,7 +365,7 @@ describe("enfsensure symlink", function () {
             });
         });
 
-        describe("ensureSymlink()", function () {
+        describe("> ensureSymlink()", function () {
             tests.forEach(function (test) {
                 switch (test.ensure) {
                     case "file-success":
@@ -389,7 +400,7 @@ describe("enfsensure symlink", function () {
     });
 
     describe("> sync", function () {
-        describe("fs.symlinkSync()", function () {
+        describe("> fs.symlinkSync()", function () {
             tests.forEach(function (test) {
                 switch (test.fs) {
                     case "file-success":
@@ -422,7 +433,7 @@ describe("enfsensure symlink", function () {
             });
         });
 
-        describe("ensureSymlinkSync()", function () {
+        describe("> ensureSymlinkSync()", function () {
             tests.forEach(function (test) {
                 switch (test.ensure) {
                     case "file-success":

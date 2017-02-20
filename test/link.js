@@ -102,7 +102,16 @@ describe("enfsensure link", function () {
         }
 
         result(err) {
-            super.result(err);
+            err.should.be.instanceOf(Error);
+            //ensure that directories aren't created if there's an error
+            enFs.stat(nodePath.dirname(this.dst), (errAfter, statAfter) => {
+                if (typeof this.statBefore === "undefined") {
+                    (typeof statAfter === "undefined").should.be.equal(true);
+                    return this.done();
+                }
+                this.statBefore.isDirectory().should.be.equal(statAfter.isDirectory());
+                return this.done();
+            });
         }
     }
 
@@ -115,12 +124,16 @@ describe("enfsensure link", function () {
             super.execute(`should do nothing using src '${this.src}' and dst '${this.dst}'`);
         }
         result(err){
-            super.result(err);
+            (err === null).should.be.equal(true);
+            enFs.readFile(this.dst, "utf8", (errAfter, contentAfter) => {
+                this.contentBefore.should.be.equal(contentAfter);
+                return this.done();
+            });
         }
     }
 
     describe("> async", function () {
-        describe("fs.link()", function () {
+        describe("> fs.link()", function () {
             tests.forEach(function (test) {
                 switch (test.fs) {
                     case "file-success":
@@ -138,7 +151,7 @@ describe("enfsensure link", function () {
             });
         });
 
-        describe("ensureLink()", function () {
+        describe("> ensureLink()", function () {
             tests.forEach(function (test) {
                 switch (test.ensure) {
                     case "file-success":
@@ -158,7 +171,7 @@ describe("enfsensure link", function () {
     });
 
     describe("> sync", function () {
-        describe("fs.linkSync()", function () {
+        describe("> fs.linkSync()", function () {
             tests.forEach(function (test) {
                 switch (test.fs) {
                     case "file-success":
@@ -176,7 +189,7 @@ describe("enfsensure link", function () {
             });
         });
 
-        describe("ensureLinkSync()", function () {
+        describe("> ensureLinkSync()", function () {
             tests.forEach(function (test) {
                 switch (test.ensure) {
                     case "file-success":
@@ -193,7 +206,6 @@ describe("enfsensure link", function () {
                 }
             });
         });
-
     });
 });
 

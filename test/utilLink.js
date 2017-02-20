@@ -36,9 +36,9 @@ class Test {
         } else {
             try {
                 this.fn.apply(this, args);
-                this.result(null);
+                this.result.call(this, null);
             } catch (err) {
-                this.result(err);
+                this.result.call(this, err);
             }
         }
     }
@@ -81,16 +81,7 @@ class FileError extends Test {
     }
 
     result(err) {
-        err.should.be.instanceOf(Error);
-        //ensure that directories aren't created if there's an error
-        enFs.stat(nodePath.dirname(this.dst), (errAfter, statAfter) => {
-            if (typeof this.statBefore === "undefined") {
-                (typeof statAfter === "undefined").should.be.equal(true);
-                return this.done();
-            }
-            this.statBefore.isDirectory().should.be.equal(statAfter.isDirectory());
-            return this.done();
-        });
+        super.result();
     }
 }
 
@@ -111,11 +102,7 @@ class FileDstExists extends Test {
     }
 
     result(err) {
-        (err === null).should.be.equal(true);
-        enFs.readFile(this.dst, "utf8", (errAfter, contentAfter) => {
-            this.contentBefore.should.be.equal(contentAfter);
-            return this.done();
-        });
+        super.result();
     }
 }
 
