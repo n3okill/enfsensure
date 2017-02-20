@@ -132,7 +132,7 @@ describe("enfsensure link", function () {
         }
     }
 
-    describe("> async", function () {
+    describe.only("> async", function () {
         describe("> fs.link()", function () {
             tests.forEach(function (test) {
                 switch (test.fs) {
