@@ -278,10 +278,12 @@ describe("enfsensure symlink", function () {
         }
 
         execute() {
+            let execute = super.execute.bind(this);
+            let self = this;
             it("should return error when creating symlink dir using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
                 enFs.stat(nodePath.dirname(this.dst), (errBefore, stat) => {
-                    this.statBefore = stat;
-                    super.execute(done);
+                    self.statBefore = stat;
+                    execute(done);
                 });
             });
         }
@@ -310,10 +312,12 @@ describe("enfsensure symlink", function () {
         }
 
         execute() {
+            let execute = super.execute.bind(this);
+            let self = this;
             it("should do nothing using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
                 enFs.readdir(this.dst, (errBefore, contentBefore) => {
-                    this.contentBefore = contentBefore;
-                    super.execute(done);
+                    self.contentBefore = contentBefore;
+                    execute(done);
                 });
             });
         }

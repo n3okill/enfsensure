@@ -110,23 +110,11 @@ class DirSuccess extends Test {
     constructor(src, dst, fn, type) {
         super(src, dst, fn, type);
     }
-
-    execute() {
-        it("should create symlink dir using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
-            super.execute(done);
-        });
-    }
 }
 
 class DirBroken extends Test {
     constructor(src, dst, fn, type) {
         super(src, dst, fn, type);
-    }
-
-    execute() {
-        it("should create broken symlink dir using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
-            super.execute(done);
-        });
     }
 }
 
@@ -134,29 +122,11 @@ class DirError extends Test {
     constructor(src, dst, fn, type) {
         super(src, dst, fn, type);
     }
-
-    execute() {
-        it("should return error when creating symlink dir using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
-            enFs.stat(nodePath.dirname(this.dst), (errBefore, stat) => {
-                this.statBefore = stat;
-                super.execute(done);
-            });
-        });
-    }
 }
 
 class DirDstExists extends Test {
     constructor(src, dst, fn, type) {
         super(src, dst, fn, type);
-    }
-
-    execute() {
-        it("should do nothing using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
-            enFs.readdir(this.dst, (errBefore, contentBefore) => {
-                this.contentBefore = contentBefore;
-                super.execute(done);
-            });
-        });
     }
 }
 
