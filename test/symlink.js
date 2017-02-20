@@ -68,7 +68,7 @@ describe("enfsensure symlink", function() {
                 enFs.symlinkSync(nodePath.join(tmpPath, "windowsTestLink"), nodePath.join(tmpPath, "windowsTest"), "file");
             } catch (err) {
                 if (err.code === "EPERM") {
-                    //console.log("Windows symlink will not be tested because there is no permissions.");
+                    console.log("Windows symlink will not be tested because there is no permissions.");
                     windowsTestLink = false;
                 }
             }
