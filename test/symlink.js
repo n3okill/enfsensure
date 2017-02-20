@@ -453,6 +453,9 @@ describe.only("enfsensure symlink", function () {
             if (err && err.code === "EPERM" && isWindows) {
                 return self.done();
             }
+            if(err) {
+                throw err;
+            }
             (err === null).should.be.equal(true);
             enFs.lstat(self.dst, function (errStat, stat) {
                 (errStat === null).should.be.equal(true);
