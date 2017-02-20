@@ -453,9 +453,6 @@ describe.only("enfsensure symlink", function () {
             if (err && err.code === "EPERM" && isWindows) {
                 return self.done();
             }
-            if(err) {
-                throw err;
-            }
             (err === null).should.be.equal(true);
             enFs.lstat(self.dst, function (errStat, stat) {
                 (errStat === null).should.be.equal(true);
@@ -676,8 +673,8 @@ describe.only("enfsensure symlink", function () {
                 ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
                 ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
             });
-            afterEach(function () {
-                rimraf.sync(tmpPath + nodePath.sep + "*");
+            afterEach(function (done) {
+                rimraf(tmpPath + nodePath.sep + "*", done);
             });
             tests.forEach(function (test) {
                 switch (test.fs) {
