@@ -17,7 +17,7 @@ const ensureSymlinkPaths = require("../lib/async/symlinkPaths");
 const ensureSymlinkPathsSync = require("../lib/sync/symlinkPaths");
 
 
-describe("enfsensure symlink paths", function() {
+describe("enfsensure symlink paths", function () {
     const tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensuresymlinkPaths");
 
     const tests = [
@@ -37,42 +37,42 @@ describe("enfsensure symlink paths", function() {
         }
     ];
 
-    before(function() {
+    before(function () {
         enfsmkdirp.mkdirpSync(tmpPath);
         process.chdir(tmpPath);
     });
-    beforeEach(function() {
+    beforeEach(function () {
         enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
         ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
         ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
         ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
         ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
     });
-    afterEach(function() {
-        rimraf.sync(tmpPath + nodePath.sep + "*");
+    afterEach(function (done) {
+        rimraf(tmpPath + nodePath.sep + "*", done);
     });
-    after(function() {
+    after(function () {
         process.chdir(cwd);
         rimraf.sync(tmpPath);
     });
 
 
     // formats paths to pass on multiple operating systems
-    tests.forEach(function(test) {
+    tests.forEach(function (test) {
         test.src = nodePath.join(test.src);
         test.dst = nodePath.join(test.dst);
         test.result.toCwd = nodePath.join(test.result.toCwd);
         test.result.toDst = nodePath.join(test.result.toDst);
     });
 
-    describe("> async", function() {
-        describe('symlinkPaths()', function() {
-            tests.forEach(function(test) {
-                it("should return '" + JSON.stringify(test.result) + "' when src '" + test.src + "' and dst is '" + test.dst + "'", function(done) {
+    describe("> async", function () {
+        describe('symlinkPaths()', function () {
+            tests.forEach(function (test) {
+                it("should return '" + JSON.stringify(test.result) + "' when src '" + test.src + "' and dst is '" + test.dst + "'", function (done) {
                     const args = [];
                     args.push(test.src);
                     args.push(test.dst);
-                    args.push(function(err, relativePaths) {
+                    args.push(function (err, relativePaths) {
                         (err === null).should.be.equal(true);
                         relativePaths.should.be.eql(test.result);
                         done();
@@ -82,13 +82,13 @@ describe("enfsensure symlink paths", function() {
             });
         });
     });
-    describe("> sync", function() {
-        describe("symlinkPathsSync()", function() {
-            tests.forEach(function(test) {
+    describe("> sync", function () {
+        describe("symlinkPathsSync()", function () {
+            tests.forEach(function (test) {
                 const args = [];
                 args.push(test.src);
                 args.push(test.dst);
-                it("should return '" + JSON.stringify(test.result) + "' when src '" + test.src + "' and dst is '" + test.dst + "'", function() {
+                it("should return '" + JSON.stringify(test.result) + "' when src '" + test.src + "' and dst is '" + test.dst + "'", function () {
                     const relativePaths = ensureSymlinkPathsSync.apply(null, args);
                     relativePaths.should.be.eql(test.result);
                 });

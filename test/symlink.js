@@ -17,9 +17,10 @@ const ensure = require("../");
 const ensureSymlink = ensure.ensureSymlink;
 const ensureSymlinkSync = ensure.ensureSymlinkSync;
 const ensureSymlinkPaths = require("../lib/async/symlinkPaths");
+const UtilLink = require("./utilLink");
 
 
-describe.only("enfsensure symlink", function () {
+describe("enfsensure symlink", function () {
     const tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensuresymlink");
     const isWindows = /^win/.test(process.platform);
     const tests = [
@@ -78,602 +79,246 @@ describe.only("enfsensure symlink", function () {
         rimraf(tmpPath + nodePath.sep + "*", done);
     });
 
-    /*class Test {
-     constructor(src, dst, fn, type) {
-     this.src = src;
-     this.dst = dst;
-     this.fn = fn;
-     this.type = type;
-     this.done = null;
-     }
 
-     execute() {
-     throw new Error("Not implemented.");
-     }
+    class FileSuccess extends UtilLink.FileSuccess {
+        constructor(src, dst, fn, type) {
+            super(src, dst, fn, type);
+        }
 
-     result() {
-     throw new Error("Not implemented.");
-     }
-     }*/
+        execute() {
+            super.execute(`should create a symlink file using '${this.src}' and dst '${this.dst}'`);
+        }
 
-    /*class FileSuccess extends Test {
-     constructor(src, dst, fn, type) {
-     super(src, dst, fn, type);
-     }
-
-     execute() {
-     it("should create symlink file using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
-     const args = [];
-     this.done = done;
-     args.push(this.src);
-     args.push(this.dst);
-     if (this.type === "async") {
-     args.push(this.result.bind(this));
-     return this.fn.apply(this, args);
-     } else {
-     try {
-     this.fn.apply(this, args);
-     this.result(null);
-     } catch (err) {
-     this.result(err);
-     }
-     }
-     });
-     }
-
-     result(err) {
-     if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
-     return this.done();
-     }
-     (err === null).should.be.equal(true);
-     ensureSymlinkPaths(this.src, this.dst, (errPaths, relative) => {
-     (errPaths === null).should.be.equal(true);
-     enFs.readFile(relative.toCwd, "utf8", (errReadFile, srcContent) => {
-     (errReadFile === null).should.be.equal(true);
-     const dstDir = nodePath.dirname(this.dst);
-     const dstBasename = nodePath.basename(this.dst);
-     enFs.lstat(this.dst, (errStat, stat) => {
-     (errStat === null).should.be.equal(true);
-     enFs.readFile(this.dst, "utf8", (errReadDst, dstContent) => {
-     (errReadDst === null).should.be.equal(true);
-     enFs.readdir(dstDir, (errReaddir, dstDirContent) => {
-     (errReaddir === null).should.be.equal(true);
-     stat.isSymbolicLink().should.be.equal(true);
-     srcContent.should.be.equal(dstContent);
-     dstDirContent.indexOf(dstBasename).should.be.greaterThanOrEqual(0);
-     this.done();
-     });
-     });
-     });
-     });
-
-     });
-     }
-     }*/
-
-    function FileSuccess(src, dst, fn, type) {
-        const self = this;
-        this.src = src;
-        this.dst = dst;
-        this.fn = fn;
-        this.type = type;
-        this.done = null;
-
-        this.execute = function () {
-            it("should create symlink file using src '" + src + "' and dst '" + dst + "'", function (done) {
-                const args = [];
-                self.done = done;
-                args.push(self.src);
-                args.push(self.dst);
-                if (self.type === "async") {
-                    args.push(self.result);
-                    return self.fn.apply(null, args);
-                } else {
-                    try {
-                        self.fn.apply(null, args);
-                        self.result(null);
-                    } catch (err) {
-                        self.result(err);
-                    }
-                }
-            });
-        };
-        this.result = function (err) {
+        result(err) {
             if (err && err.code === "EPERM" && isWindows) {
-                return self.done();
+                return this.done();
             }
             (err === null).should.be.equal(true);
-            ensureSymlinkPaths(self.src, self.dst, function (errPaths, relative) {
+            ensureSymlinkPaths(this.src, this.dst, (errPaths, relative) => {
                 (errPaths === null).should.be.equal(true);
-                enFs.readFile(relative.toCwd, "utf8", function (errReadFile, srcContent) {
+                enFs.readFile(relative.toCwd, "utf8", (errReadFile, srcContent) => {
                     (errReadFile === null).should.be.equal(true);
-                    const dstDir = nodePath.dirname(self.dst);
-                    const dstBasename = nodePath.basename(self.dst);
-                    enFs.lstat(self.dst, function (errStat, stat) {
+                    const dstDir = nodePath.dirname(this.dst);
+                    const dstBasename = nodePath.basename(this.dst);
+                    enFs.lstat(this.dst, (errStat, stat) => {
                         (errStat === null).should.be.equal(true);
-                        enFs.readFile(self.dst, "utf8", function (errReadDst, dstContent) {
+                        enFs.readFile(this.dst, "utf8", (errReadDst, dstContent) => {
                             (errReadDst === null).should.be.equal(true);
-                            enFs.readdir(dstDir, function (errReaddir, dstDirContent) {
+                            enFs.readdir(dstDir, (errReaddir, dstDirContent) => {
                                 (errReaddir === null).should.be.equal(true);
                                 stat.isSymbolicLink().should.be.equal(true);
                                 srcContent.should.be.equal(dstContent);
                                 dstDirContent.indexOf(dstBasename).should.be.greaterThanOrEqual(0);
-                                self.done();
+                                this.done();
                             });
                         });
                     });
                 });
 
             });
-        };
+        }
     }
 
-    /*class FileError extends Test {
-     constructor(src, dst, fn, type) {
-     super(src, dst, fn, type);
-     this.statBefore = null;
-     }
 
-     execute() {
-     it("should return error when creating symlink file using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
-     this.done = done;
-     enFs.stat(nodePath.dirname(this.dst), (errBefore, stat) => {
-     this.statBefore = stat;
-     const args = [];
-     args.push(this.src);
-     args.push(this.dst);
-     if (this.type === "async") {
-     args.push(this.result.bind(this));
-     return this.fn.apply(null, args);
-     } else {
-     try {
-     this.fn.apply(null, args);
-     this.result(null);
-     } catch (err) {
-     this.result(err);
-     }
-     }
-     });
-     });
-     }
+    class FileError extends UtilLink.FileError {
+        constructor(src, dst, fn, type) {
+            super(src, dst, fn, type);
+            this.statBefore = null;
+        }
 
-     result(err) {
-     if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
-     return this.done();
-     }
-     err.should.be.instanceOf(Error);
-     //ensure that directories aren't created if there's an error
-     enFs.stat(nodePath.dirname(this.dst), (errAfter, statAfter) => {
-     if (typeof this.statBefore === "undefined") {
-     (typeof statAfter === "undefined").should.be.equal(true);
-     return this.done();
-     }
-     this.statBefore.isDirectory().should.be.equal(statAfter.isDirectory());
-     return this.done();
-     });
-     }
-     }*/
-    function FileError(src, dst, fn, type) {
-        const self = this;
-        this.src = src;
-        this.dst = dst;
-        this.fn = fn;
-        this.type = type;
-        this.done = null;
-        this.statBefore = null;
+        execute() {
+            super.execute(`should return error when creating symlink file using src '${this.src}' and dst '${this.dst}'`);
+        }
 
-        this.execute = function () {
-            it("should return error when creating symlink file using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
-                self.done = done;
-                enFs.stat(nodePath.dirname(self.dst), function (errBefore, stat) {
-                    self.statBefore = stat;
-                    const args = [];
-                    args.push(self.src);
-                    args.push(self.dst);
-                    if (self.type === "async") {
-                        args.push(self.result);
-                        return self.fn.apply(null, args);
-                    } else {
-                        try {
-                            self.fn.apply(null, args);
-                            self.result(null);
-                        } catch (err) {
-                            self.result(err);
-                        }
-                    }
-                });
-            });
-        };
-
-        this.result = function (err) {
+        result(err) {
             if (err && err.code === "EPERM" && isWindows) {
-                return self.done();
+                return this.done();
             }
-            err.should.be.instanceOf(Error);
-            //ensure that directories aren't created if there's an error
-            enFs.stat(nodePath.dirname(self.dst), function (errAfter, statAfter) {
-                if (typeof self.statBefore === "undefined") {
-                    (typeof statAfter === "undefined").should.be.equal(true);
-                    return self.done();
-                }
-                self.statBefore.isDirectory().should.be.equal(statAfter.isDirectory());
-                return self.done();
-            });
-        };
+            super.result(err);
+        }
     }
 
-    /*class FileDstExists extends Test {
-     constructor(src, dst, fn, type) {
-     super(src, dst, fn, type);
-     this.contentBefore = null;
-     }
 
-     execute() {
-     it("should do nothing using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
-     this.done = done;
-     enFs.readFile(this.dst, "utf8", (errBefore, contentBefore) => {
-     this.contentBefore = contentBefore;
+    class FileDstExists extends UtilLink.FileDstExists {
+        constructor(src, dst, fn, type) {
+            super(src, dst, fn, type);
+            this.contentBefore = null;
+        }
 
-     const args = [];
-     args.push(this.src);
-     args.push(this.dst);
-     if (this.type === "async") {
-     args.push(this.result.bind(this));
-     return this.fn.apply(null, args);
-     } else {
-     try {
-     this.fn.apply(null, args);
-     this.result(null);
-     } catch (err) {
-     this.result(err);
-     }
-     }
-     });
-     });
-     }
+        execute() {
+            super.execute(`should do nothing using src '${this.src}' and dst '${this.dst}'`);
+        }
 
-     result(err) {
-     if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
-     return this.done();
-     }
-     (err === null).should.be.equal(true);
-     enFs.readFile(this.dst, "utf8", (errAfter, contentAfter) => {
-     this.contentBefore.should.be.equal(contentAfter);
-     return this.done();
-     });
-     }
-     }*/
-
-    function FileDstExists(src, dst, fn, type) {
-        const self = this;
-        this.src = src;
-        this.dst = dst;
-        this.fn = fn;
-        this.type = type;
-        this.done = null;
-        this.contentBefore = null;
-
-        this.execute = function () {
-            it("should do nothing using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
-                self.done = done;
-                enFs.readFile(self.dst, "utf8", function (errBefore, contentBefore) {
-                    self.contentBefore = contentBefore;
-
-                    const args = [];
-                    args.push(self.src);
-                    args.push(self.dst);
-                    if (self.type === "async") {
-                        args.push(self.result);
-                        return self.fn.apply(null, args);
-                    } else {
-                        try {
-                            self.fn.apply(null, args);
-                            self.result(null);
-                        } catch (err) {
-                            self.result(err);
-                        }
-                    }
-                });
-            });
-        };
-        this.result = function (err) {
+        result(err) {
             if (err && err.code === "EPERM" && isWindows) {
-                return self.done();
+                return this.done();
+            }
+            super.result(err);
+        }
+    }
+
+
+    class FileBroken extends UtilLink.FileBroken {
+        constructor(src, dst, fn, type) {
+            super(src, dst, fn, type);
+        }
+
+        execute() {
+            super.execute(`should create broken symlink file using src '${this.src}' and dst '${this.dst}'`);
+        }
+
+        result(err) {
+            if (err && err.code === "EPERM" && isWindows) {
+                return this.done();
             }
             (err === null).should.be.equal(true);
-            enFs.readFile(self.dst, "utf8", function (errAfter, contentAfter) {
-                self.contentBefore.should.be.equal(contentAfter);
-                return self.done();
-            });
-        };
-    }
-
-    /*class FileBroken extends Test {
-     constructor(src, dst, fn, type) {
-     super(src, dst, fn, type);
-     }
-
-     execute() {
-     it("should create broken symlink file using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
-     this.done = done;
-     const args = [];
-     args.push(this.src);
-     args.push(this.dst);
-     if (this.type === "async") {
-     args.push(this.result.bind(this));
-     return this.fn.apply(null, args);
-     } else {
-     try {
-     this.fn.apply(null, args);
-     this.result(null);
-     } catch (err) {
-     this.result(err);
-     }
-     }
-     });
-     }
-
-     result(err) {
-     if (err && err.code === "EPERM" && isWindows && !windowsTestLink) {
-     return this.done();
-     }
-     (err === null).should.be.equal(true);
-     enFs.lstat(this.dst, (errStat, stat) => {
-     (errStat === null).should.be.equal(true);
-     enFs.readdir(nodePath.dirname(this.dst), (errReaddir, contents) =>{
-     (errReaddir === null).should.be.equal(true);
-     stat.isSymbolicLink().should.be.equal(true);
-     contents.indexOf(nodePath.basename(this.dst)).should.be.greaterThanOrEqual(0);
-     enFs.readFile(this.dst, "utf8", (errReadFile) => {
-     errReadFile.should.be.instanceOf(Error);
-     return this.done();
-     });
-     });
-     });
-     }
-     }*/
-
-    function FileBroken(src, dst, fn, type) {
-        const self = this;
-        this.src = src;
-        this.dst = dst;
-        this.fn = fn;
-        this.type = type;
-        this.done = null;
-
-        this.execute = function () {
-            it("should create broken symlink file using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
-                self.done = done;
-                const args = [];
-                args.push(self.src);
-                args.push(self.dst);
-                if (self.type === "async") {
-                    args.push(self.result);
-                    return self.fn.apply(null, args);
-                } else {
-                    try {
-                        self.fn.apply(null, args);
-                        self.result(null);
-                    } catch (err) {
-                        self.result(err);
-                    }
-                }
-            });
-        };
-        this.result = function (err) {
-            if (err && err.code === "EPERM" && isWindows) {
-                return self.done();
-            }
-            (err === null).should.be.equal(true);
-            enFs.lstat(self.dst, function (errStat, stat) {
+            enFs.lstat(this.dst, (errStat, stat) => {
                 (errStat === null).should.be.equal(true);
-                enFs.readdir(nodePath.dirname(self.dst), function (errReaddir, contents) {
+                enFs.readdir(nodePath.dirname(this.dst), (errReaddir, contents) => {
                     (errReaddir === null).should.be.equal(true);
                     stat.isSymbolicLink().should.be.equal(true);
-                    contents.indexOf(nodePath.basename(self.dst)).should.be.greaterThanOrEqual(0);
-                    enFs.readFile(self.dst, "utf8", function (errReadFile) {
+                    contents.indexOf(nodePath.basename(this.dst)).should.be.greaterThanOrEqual(0);
+                    enFs.readFile(this.dst, "utf8", (errReadFile) => {
                         errReadFile.should.be.instanceOf(Error);
-                        return self.done();
+                        return this.done();
                     });
                 });
             });
-        };
+        }
     }
 
-    function DirSuccess(src, dst, fn, type) {
-        const self = this;
-        this.src = src;
-        this.dst = dst;
-        this.fn = fn;
-        this.type = type;
-        this.done = null;
 
-        this.execute = function () {
-            it("should create symlink dir using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
-                const args = [];
-                self.done = done;
-                args.push(self.src);
-                args.push(self.dst);
-                if (self.type === "async") {
-                    args.push(self.result);
-                    return self.fn.apply(null, args);
-                } else {
-                    try {
-                        self.fn.apply(null, args);
-                        self.result(null);
-                    } catch (err) {
-                        self.result(err);
-                    }
-                }
+    class DirSuccess extends UtilLink.Test {
+        constructor(src, dst, fn, type) {
+            super(src, dst, fn, type);
+        }
+
+        execute() {
+            it("should create symlink dir using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
+                super.execute(done);
             });
-        };
-        this.result = function (err) {
+        }
+
+        result(err) {
             if (err && err.code === "EPERM" && isWindows) {
-                return self.done();
+                return this.done();
             }
             (err === null).should.be.equal(true);
-            ensureSymlinkPaths(self.src, self.dst, function (errPaths, relative) {
+            ensureSymlinkPaths(this.src, this.dst, (errPaths, relative) => {
                 (errPaths === null).should.be.equal(true);
-                enFs.readdir(relative.toCwd, function (errReadDir, srcContent) {
+                enFs.readdir(relative.toCwd, (errReadDir, srcContent) => {
                     (errReadDir === null).should.be.equal(true);
-                    enFs.lstat(self.dst, function (errStat, stat) {
+                    enFs.lstat(this.dst, (errStat, stat) => {
                         (errStat === null).should.be.equal(true);
-                        enFs.readdir(self.dst, function (errReadDst, dstContent) {
+                        enFs.readdir(this.dst, (errReadDst, dstContent) => {
                             (errReadDst === null).should.be.equal(true);
-                            enFs.readdir(nodePath.dirname(self.dst), function (errReadDir2, dstDirContent) {
+                            enFs.readdir(nodePath.dirname(this.dst), (errReadDir2, dstDirContent) => {
                                 (errReadDir2 === null).should.be.equal(true);
                                 stat.isSymbolicLink().should.be.equal(true);
                                 srcContent.should.be.eql(dstContent);
-                                dstDirContent.indexOf(nodePath.basename(self.dst)).should.be.greaterThanOrEqual(0);
-                                self.done();
+                                dstDirContent.indexOf(nodePath.basename(this.dst)).should.be.greaterThanOrEqual(0);
+                                this.done();
                             });
                         });
                     });
                 });
             });
-        };
+        }
     }
 
-    function DirBroken(src, dst, fn, type) {
-        const self = this;
-        this.src = src;
-        this.dst = dst;
-        this.fn = fn;
-        this.type = type;
-        this.done = null;
 
-        this.execute = function () {
-            it("should create broken symlink dir using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
-                self.done = done;
-                const args = [];
-                args.push(self.src);
-                args.push(self.dst);
-                if (self.type === "async") {
-                    args.push(self.result);
-                    return self.fn.apply(null, args);
-                } else {
-                    try {
-                        self.fn.apply(null, args);
-                        self.result(null);
-                    } catch (err) {
-                        self.result(err);
-                    }
-                }
+    class DirBroken extends UtilLink.Test {
+        constructor(src, dst, fn, type) {
+            super(src, dst, fn, type);
+        }
+
+        execute() {
+            it("should create broken symlink dir using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
+                super.execute(done);
             });
-        };
-        this.result = function (err) {
+        }
+
+        result(err) {
             if (err && err.code === "EPERM" && isWindows) {
-                return self.done();
+                return this.done();
             }
             (err === null).should.be.equal(true);
-            enFs.lstat(self.dst, function (errStat, stat) {
+            enFs.lstat(this.dst, (errStat, stat) => {
                 (errStat === null).should.be.equal(true);
-                enFs.readdir(nodePath.dirname(self.dst), function (errReaddir, contents) {
+                enFs.readdir(nodePath.dirname(this.dst), (errReaddir, contents) => {
                     (errReaddir === null).should.be.equal(true);
                     stat.isSymbolicLink().should.be.equal(true);
-                    contents.indexOf(nodePath.basename(self.dst)).should.be.greaterThanOrEqual(0);
-                    enFs.readdir(self.dst, function (errReadFile) {
+                    contents.indexOf(nodePath.basename(this.dst)).should.be.greaterThanOrEqual(0);
+                    enFs.readdir(this.dst, (errReadFile) => {
                         if (errReadFile) {
                             errReadFile.should.be.instanceOf(Error);
                         }
-                        return self.done();
+                        return this.done();
                     });
                 });
             });
-        };
+        }
     }
 
-    function DirError(src, dst, fn, type) {
-        const self = this;
-        this.src = src;
-        this.dst = dst;
-        this.fn = fn;
-        this.type = type;
-        this.done = null;
-        this.statBefore = null;
 
-        this.execute = function () {
-            it("should return error when creating symlink dir using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
-                self.done = done;
-                enFs.stat(nodePath.dirname(self.dst), function (errBefore, stat) {
-                    self.statBefore = stat;
-                    const args = [];
-                    args.push(self.src);
-                    args.push(self.dst);
-                    if (self.type === "async") {
-                        args.push(self.result);
-                        return self.fn.apply(null, args);
-                    } else {
-                        try {
-                            self.fn.apply(null, args);
-                            self.result(null);
-                        } catch (err) {
-                            self.result(err);
-                        }
-                    }
+    class DirError extends UtilLink.Test {
+        constructor(src, dst, fn, type) {
+            super(src, dst, fn, type);
+        }
+
+        execute() {
+            it("should return error when creating symlink dir using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
+                enFs.stat(nodePath.dirname(this.dst), (errBefore, stat) => {
+                    this.statBefore = stat;
+                    super.execute(done);
                 });
             });
-        };
-        this.result = function (err) {
+        }
+
+        result(err) {
             if (err && err.code === "EPERM" && isWindows) {
-                return self.done();
+                return this.done();
             }
             err.should.be.instanceOf(Error);
             //ensure that directories aren't created if there's an error
-            enFs.stat(nodePath.dirname(self.dst), function (errAfter, statAfter) {
-                if (self.statBefore === undefined) {
-                    (statAfter === undefined).should.be.equal(true);
-                    return self.done();
+            enFs.stat(nodePath.dirname(this.dst), (errAfter, statAfter) => {
+                if (typeof this.statBefore === "undefined") {
+                    (typeof statAfter === "undefined").should.be.equal(true);
+                    return this.done();
                 }
-                self.statBefore.isDirectory().should.be.equal(statAfter.isDirectory());
-                return self.done();
+                this.statBefore.isDirectory().should.be.equal(statAfter.isDirectory());
+                return this.done();
             });
-        };
+        }
     }
 
-    function DirDstExists(src, dst, fn, type) {
-        const self = this;
-        this.src = src;
-        this.dst = dst;
-        this.fn = fn;
-        this.type = type;
-        this.done = null;
-        this.contentBefore = null;
 
-        this.execute = function () {
-            it("should do nothing using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
-                self.done = done;
-                enFs.readdir(self.dst, function (errBefore, contentBefore) {
-                    self.contentBefore = contentBefore;
+    class DirDstExists extends UtilLink.Test {
+        constructor(src, dst, fn, type) {
+            super(src, dst, fn, type);
+        }
 
-                    const args = [];
-                    args.push(self.src);
-                    args.push(self.dst);
-                    if (self.type === "async") {
-                        args.push(self.result);
-                        return self.fn.apply(null, args);
-                    } else {
-                        try {
-                            self.fn.apply(null, args);
-                            self.result(null);
-                        } catch (err) {
-                            self.result(err);
-                        }
-                    }
+        execute() {
+            it("should do nothing using src '" + this.src + "' and dst '" + this.dst + "'", (done) => {
+                enFs.readdir(this.dst, (errBefore, contentBefore) => {
+                    this.contentBefore = contentBefore;
+                    super.execute(done);
                 });
             });
-        };
-        this.result = function (err) {
+        }
+
+        result(err) {
             if (err && err.code === "EPERM" && isWindows) {
-                return self.done();
+                return this.done();
             }
             (err === null).should.be.equal(true);
-            enFs.readdir(self.dst, function (errAfter, contentAfter) {
-                self.contentBefore.should.be.eql(contentAfter);
-                return self.done();
+            enFs.readdir(this.dst, (errAfter, contentAfter) => {
+                this.contentBefore.should.be.eql(contentAfter);
+                return this.done();
             });
-        };
+        }
     }
+
 
     describe("> async", function () {
         describe("fs.symlink()", function () {

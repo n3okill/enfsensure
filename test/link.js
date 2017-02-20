@@ -15,6 +15,7 @@ const enfsmkdirp = require("enfsmkdirp");
 const ensure = require("../");
 const ensureLink = ensure.ensureLink;
 const ensureLinkSync = ensure.ensureLinkSync;
+const UtilLink = require("./utilLink");
 
 
 describe("enfsensure link", function () {
@@ -55,144 +56,71 @@ describe("enfsensure link", function () {
         rimraf.sync(tmpPath);
     });
 
+    beforeEach(function () {
+        enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
+        ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
+        ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
+        ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
+        ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
+    });
+    afterEach(function (done) {
+        rimraf(tmpPath + nodePath.sep + "*", done);
+    });
 
-    function FileSuccess(src, dst, fn, type) {
-        const self = this;
-        this.src = src;
-        this.dst = dst;
-        this.fn = fn;
-        this.type = type;
-        this.done = null;
+    class FileSuccess extends UtilLink.FileSuccess {
+        constructor(src, dst, fn, type) {
+            super(src, dst, fn, type);
+        }
 
-        this.execute = function () {
-            it("should create link file using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
-                const args = [];
-                self.done = done;
-                args.push(self.src);
-                args.push(self.dst);
-                if (self.type === "async") {
-                    args.push(self.result);
-                    return self.fn.apply(null, args);
-                } else {
-                    try {
-                        self.fn.apply(null, args);
-                        self.result(null);
-                    } catch (err) {
-                        self.result(err);
-                    }
-                }
-            });
-        };
-        this.result = function (err) {
+        execute() {
+            super.execute(`should create link file using '${this.src}' and dst '${this.dst}'`);
+        }
+
+        result(err) {
             if (err) {
-                return self.done(err);
+                return this.done(err);
             }
-            enFs.readFile(self.src, "utf8", function (errReadFile, srcContent) {
+            enFs.readFile(this.src, "utf8", (errReadFile, srcContent) => {
                 (errReadFile === null).should.be.equal(true);
-                const dstDir = nodePath.dirname(self.dst);
-                const dstBasename = nodePath.basename(self.dst);
-                enFs.lstatSync(self.dst).isFile().should.be.equal(true);
-                enFs.readFileSync(self.dst, "utf8").should.be.equal(srcContent);
+                const dstDir = nodePath.dirname(this.dst);
+                const dstBasename = nodePath.basename(this.dst);
+                enFs.lstatSync(this.dst).isFile().should.be.equal(true);
+                enFs.readFileSync(this.dst, "utf8").should.be.equal(srcContent);
                 enFs.readdirSync(dstDir).indexOf(dstBasename).should.be.greaterThanOrEqual(0);
-                self.done();
+                this.done();
             });
-        };
+        }
     }
 
-    function FileError(src, dst, fn, type) {
-        const self = this;
-        this.src = src;
-        this.dst = dst;
-        this.fn = fn;
-        this.type = type;
-        this.done = null;
-        this.statBefore = null;
+    class FileError extends UtilLink.FileError {
+        constructor(src, dst, fn, type) {
+            super(src, dst, fn, type);
+        }
 
-        this.execute = () => {
-            it("should throw error using '" + self.src + "' and dst '" + self.dst + "'", function (done) {
-                self.done = done;
-                enFs.stat(nodePath.dirname(self.dst), function (errBefore, stat) {
-                    self.statBefore = stat;
-                    const args = [];
-                    args.push(self.src);
-                    args.push(self.dst);
-                    if (self.type === "async") {
-                        args.push(self.result);
-                        return self.fn.apply(null, args);
-                    } else {
-                        try {
-                            self.fn.apply(null, args);
-                            self.result(null);
-                        } catch (err) {
-                            self.result(err);
-                        }
-                    }
-                });
-            });
-        };
-        this.result = function (err) {
-            err.should.be.instanceOf(Error);
-            //ensure that directories aren't created if there's an error
-            enFs.stat(nodePath.dirname(self.dst), function (errAfter, statAfter) {
-                if (typeof self.statBefore === "undefined") {
-                    (typeof statAfter === "undefined").should.be.equal(true);
-                    return self.done();
-                }
-                self.statBefore.isDirectory().should.be.equal(statAfter.isDirectory());
-                return self.done();
-            });
-        };
+        execute() {
+            super.execute(`should throw error using '${this.src}' and dst '${this.dst}'`);
+        }
+
+        result(err) {
+            super.result(err);
+        }
     }
 
-    function FileDstExists(src, dst, fn, type) {
-        const self = this;
-        this.src = src;
-        this.dst = dst;
-        this.fn = fn;
-        this.type = type;
-        this.done = null;
-        this.contentBefore = null;
+    class FileDstExists extends UtilLink.FileDstExists {
+        constructor(src, dst, fn, type) {
+            super(src, dst, fn, type);
+        }
 
-        this.execute = function () {
-            it("should do nothing using src '" + self.src + "' and dst '" + self.dst + "'", function (done) {
-                self.done = done;
-                self.contentBefore = enFs.readFileSync(self.dst, "utf8");
-
-                const args = [];
-                args.push(self.src);
-                args.push(self.dst);
-                if (self.type === "async") {
-                    args.push(self.result);
-                    return self.fn.apply(null, args);
-                } else {
-                    try {
-                        self.fn.apply(null, args);
-                        self.result(null);
-                    } catch (err) {
-                        self.result(err);
-                    }
-                }
-            });
-        };
-        this.result = function (err) {
-            (err === null).should.be.equal(true);
-            enFs.readFileSync(self.dst, "utf8").should.be.equal(self.contentBefore);
-            self.done();
-        };
+        execute() {
+            super.execute(`should do nothing using src '${this.src}' and dst '${this.dst}'`);
+        }
+        result(err){
+            super.result(err);
+        }
     }
 
     describe("> async", function () {
         describe("fs.link()", function () {
-            beforeEach(function () {
-                enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
-                ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
-                ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
-            });
-            afterEach(function (done) {
-                rimraf(tmpPath + nodePath.sep + "*",done);
-            });
             tests.forEach(function (test) {
                 switch (test.fs) {
                     case "file-success":
@@ -211,16 +139,6 @@ describe("enfsensure link", function () {
         });
 
         describe("ensureLink()", function () {
-            beforeEach(function () {
-                enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
-                ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
-                ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
-            });
-            afterEach(function (done) {
-                rimraf(tmpPath + nodePath.sep + "*",done);
-            });
             tests.forEach(function (test) {
                 switch (test.ensure) {
                     case "file-success":
@@ -241,16 +159,6 @@ describe("enfsensure link", function () {
 
     describe("> sync", function () {
         describe("fs.linkSync()", function () {
-            beforeEach(function () {
-                enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
-                ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
-                ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
-            });
-            afterEach(function (done) {
-                rimraf(tmpPath + nodePath.sep + "*",done);
-            });
             tests.forEach(function (test) {
                 switch (test.fs) {
                     case "file-success":
@@ -269,16 +177,6 @@ describe("enfsensure link", function () {
         });
 
         describe("ensureLinkSync()", function () {
-            beforeEach(function () {
-                enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
-                ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
-                ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
-                ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
-            });
-            afterEach(function (done) {
-                rimraf(tmpPath + nodePath.sep + "*",done);
-            });
             tests.forEach(function (test) {
                 switch (test.ensure) {
                     case "file-success":

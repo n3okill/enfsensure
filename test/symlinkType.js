@@ -16,7 +16,7 @@ const ensure = require("../");
 const ensureSymlinkType = require("../lib/async/symlinkType");
 const ensureSymlinkTypeSync = require("../lib/sync/symlinkType");
 
-describe("enfsensure symlink type", function() {
+describe("enfsensure symlink type", function () {
     const tmpPath = nodePath.join(nodeOs.tmpdir(), "enfsensuresymlinkType");
 
     const tests = [
@@ -72,30 +72,30 @@ describe("enfsensure symlink type", function() {
     ];
 
 
-    before(function() {
+    before(function () {
         enfsmkdirp.mkdirpSync(tmpPath);
         process.chdir(tmpPath);
     });
-    beforeEach(function() {
+    beforeEach(function () {
         enFs.writeFileSync(nodePath.join(tmpPath, "foo.txt"), "foo\n");
         ensure.ensureDirSync(nodePath.join(tmpPath, "empty-dir"));
         ensure.ensureFileSync(nodePath.join(tmpPath, "dir-foo", "foo.txt"), {data: "dir-foo\n"});
         ensure.ensureFileSync(nodePath.join(tmpPath, "dir-bar", "bar.txt"), {data: "dir-bar\n"});
         ensure.ensureDirSync(nodePath.join(tmpPath, "real-alpha", "real-beta", "real-gamma"));
     });
-    afterEach(function() {
-        rimraf.sync(tmpPath + nodePath.sep + "*");
+    afterEach(function (done) {
+        rimraf(tmpPath + nodePath.sep + "*", done);
     });
-    after(function() {
+    after(function () {
         process.chdir(cwd);
         rimraf.sync(tmpPath);
     });
 
-    describe("> async", function() {
-        describe("symlinkType()", function() {
-            tests.forEach(function(test) {
-                it("should return '" + test.result + "' when src '" + test.src + "'", function(done) {
-                    ensureSymlinkType(test.src, test.force || null, function(err, type) {
+    describe("> async", function () {
+        describe("symlinkType()", function () {
+            tests.forEach(function (test) {
+                it("should return '" + test.result + "' when src '" + test.src + "'", function (done) {
+                    ensureSymlinkType(test.src, test.force || null, function (err, type) {
                         (err === null).should.be.equal(true);
                         type.should.be.equal(test.result);
                         done();
@@ -104,10 +104,10 @@ describe("enfsensure symlink type", function() {
             });
         });
     });
-    describe("> sync", function() {
-        describe("symlinkTypeSync()", function() {
-            tests.forEach(function(test) {
-                it("should return '" + test.result + "' when src '" + test.src + "'", function() {
+    describe("> sync", function () {
+        describe("symlinkTypeSync()", function () {
+            tests.forEach(function (test) {
+                it("should return '" + test.result + "' when src '" + test.src + "'", function () {
                     ensureSymlinkTypeSync(test.src, test.force || null).should.be.equal(test.result);
                 });
             });
